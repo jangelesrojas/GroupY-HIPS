@@ -1,0 +1,218 @@
+package com.example.hips
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
+
+@Composable
+fun RealMain() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xFF0D0D1A))
+            .padding(start = 16.dp, end = 16.dp, bottom = 16.dp, top = 40.dp) // ← increased top padding
+    ) {
+        // ── TOP BAR ──
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(Color(0xFF2D1B6B), shape = CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(Icons.Default.Shield, contentDescription = null, tint = Color(0xFF7B4FE0))
+                }
+                Spacer(modifier = Modifier.width(10.dp))
+                Column {
+                    Text("HIPS", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                    Text("STEGANOGRAPHIC SUITE", color = Color(0xFF7B4FE0), fontSize = 10.sp)
+                }
+            }
+            // Settings icon — NO border/box
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.Settings,
+                    contentDescription = "Settings",
+                    tint = Color.White,
+                    modifier = Modifier.size(22.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Icon(
+                    imageVector = Icons.Default.ExitToApp,
+                    contentDescription = "Exit",
+                    tint = Color.White,
+                    modifier = Modifier.size(22.dp)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // ── SECURE SESSION BANNER ──
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color(0xFF0D2B1A), shape = RoundedCornerShape(8.dp))
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .background(Color(0xFF00FF7F), shape = CircleShape)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Secure session active", color = Color(0xFF00FF7F), fontSize = 14.sp)
+            }
+            Icon(Icons.Default.Lock, contentDescription = null, tint = Color(0xFF00FF7F), modifier = Modifier.size(18.dp))
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // ── DESCRIPTION CARD ──
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color(0xFF13132A), shape = RoundedCornerShape(8.dp))
+                .padding(14.dp)
+        ) {
+            Text(
+                text = "HIPS conceals secret messages inside ordinary image " +
+                        "files using ordinary image files using " +
+                        "Least Significant Bit steganography. The images " +
+                        "appear completely normal to any observer.",
+                color = Color.White, fontSize = 13.sp
+            )
+            // Note: use AnnotatedString for the colored "Least Significant Bit" span
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // ── MOBILE SECTION LABEL ──
+        Text("MOBILE", color = Color(0xFF888888), fontSize = 11.sp, letterSpacing = 2.sp)
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // ── EMBED MESSAGE CARD ──
+        FeatureCard(
+            icon = Icons.Default.VisibilityOff,
+            title = "Embed Message",
+            subtitle = "Camera · Gallery · Confirm · Share",
+            steps = listOf("Take photo", "Write message", "Confirm", "Share"),
+            backgroundColor = Color(0xFF1E0A4A)
+        )
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        // ── EXTRACT MESSAGE CARD ──
+        FeatureCard(
+            icon = Icons.Default.Visibility,
+            title = "Extract Message",
+            subtitle = "Gallery · Confirm · Reveal · Done",
+            steps = listOf("Select image", "Confirm", "Scan", "Done"),
+            backgroundColor = Color(0xFF0A2A1E)
+        )
+    }
+}
+
+// ── REUSABLE FEATURE CARD ──
+@Composable
+fun FeatureCard(
+    icon: ImageVector,
+    title: String,
+    subtitle: String,
+    steps: List<String>,
+    backgroundColor: Color
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(backgroundColor, shape = RoundedCornerShape(12.dp))
+            .padding(28.dp) // ← increased from 14.dp
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier
+                    .size(88.dp) // ← increased from 44.dp
+                    .background(backgroundColor.copy(alpha = 0.6f), shape = RoundedCornerShape(10.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    icon,
+                    contentDescription = null,
+                    tint = Color(0xFF7B4FE0),
+                    modifier = Modifier.size(48.dp) // ← increased from 24.dp
+                )
+            }
+            Spacer(modifier = Modifier.width(16.dp)) // ← increased from 12.dp
+            Column {
+                Text(title, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 22.sp) // ← increased from 16.sp
+                Text(subtitle, color = Color(0xFF888888), fontSize = 15.sp) // ← increased from 11.sp
+            }
+        }
+        Spacer(modifier = Modifier.height(20.dp)) // ← increased from 10.dp
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.horizontalScroll(rememberScrollState())
+        ) {
+            steps.forEach { step ->
+                Box(
+                    modifier = Modifier
+                        .background(Color(0xFF2A2A3A), shape = RoundedCornerShape(4.dp))
+                        .padding(horizontal = 14.dp, vertical = 8.dp)
+                ) {
+                    Text(
+                        text = step,
+                        color = Color(0xFFAAAAAA),
+                        fontSize = 14.sp,
+                        maxLines = 1,          // ← forces single line
+                        softWrap = false       // ← prevents wrapping
+                    )
+                }
+            }
+        }
+    }
+}

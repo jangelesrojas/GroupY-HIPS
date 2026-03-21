@@ -9,17 +9,16 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            CoverAppScreen(
-                onUnlock = {
-                    // TODO: navigate to next screen after unlock
-                }
-            )
-        }
-    }
+            val showRealScreen = true
 
-    companion object {
-        init {
-            System.loadLibrary("hips")
+            if (showRealScreen) {
+                RealMain(
+                )
+            } else {
+                CoverAppScreen(
+                )
+
+            }
         }
     }
 }

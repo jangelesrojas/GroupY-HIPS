@@ -105,9 +105,7 @@ private val entries = listOf(
 )
 
 @Composable
-fun CoverAppScreen(
-    onUnlock: () -> Unit
-) {
+fun CoverAppScreen() {
     // I keep track of tap times so I can detect the secret logo tap pattern.
     val tapTimes = remember { mutableStateListOf<Long>() }
 
@@ -151,7 +149,6 @@ fun CoverAppScreen(
         if (tapTimes.isEmpty()) return@LaunchedEffect
         if (tapTimes.size >= SECRET_TAPS) {
             delay(150)
-            onUnlock()
         }
     }
 
