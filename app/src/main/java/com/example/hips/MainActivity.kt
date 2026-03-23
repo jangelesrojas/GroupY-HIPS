@@ -12,7 +12,7 @@ class MainActivity : ComponentActivity() {
             val showRealScreen = true
 
             if (showRealScreen) {
-                RealMain(
+                CoverAppScreen(
                 )
             } else {
                 CoverAppScreen(

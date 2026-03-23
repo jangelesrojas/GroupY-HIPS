@@ -39,6 +39,7 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.clickable
 
 @Composable
 fun RealMain() {
@@ -48,7 +49,7 @@ fun RealMain() {
             .background(Color(0xFF0D0D1A))
             .padding(start = 16.dp, end = 16.dp, bottom = 16.dp, top = 40.dp) // ← increased top padding
     ) {
-        // ── TOP BAR ──
+        // Bar at top for spacing
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -69,27 +70,28 @@ fun RealMain() {
                     Text("STEGANOGRAPHIC SUITE", color = Color(0xFF7B4FE0), fontSize = 10.sp)
                 }
             }
-            // Settings icon — NO border/box
             Row(verticalAlignment = Alignment.CenterVertically) {
+                // Settings icon
                 Icon(
                     imageVector = Icons.Default.Settings,
                     contentDescription = "Settings",
                     tint = Color.White,
-                    modifier = Modifier.size(22.dp)
+                    modifier = Modifier.size(22.dp).clickable{ /* navigate to settings */ }
                 )
                 Spacer(modifier = Modifier.width(6.dp))
+                //Exit app icon
                 Icon(
                     imageVector = Icons.Default.ExitToApp,
                     contentDescription = "Exit",
                     tint = Color.White,
-                    modifier = Modifier.size(22.dp)
+                    modifier = Modifier.size(22.dp).clickable{ /* exit app */ }
                 )
             }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // ── SECURE SESSION BANNER ──
+        // Text that says secure session
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -112,7 +114,7 @@ fun RealMain() {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // ── DESCRIPTION CARD ──
+        // Description text
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -126,52 +128,55 @@ fun RealMain() {
                         "appear completely normal to any observer.",
                 color = Color.White, fontSize = 13.sp
             )
-            // Note: use AnnotatedString for the colored "Least Significant Bit" span
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // ── MOBILE SECTION LABEL ──
+        // Section that says mobile
         Text("MOBILE", color = Color(0xFF888888), fontSize = 11.sp, letterSpacing = 2.sp)
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // ── EMBED MESSAGE CARD ──
+        // Button for embed message
         FeatureCard(
             icon = Icons.Default.VisibilityOff,
             title = "Embed Message",
             subtitle = "Camera · Gallery · Confirm · Share",
             steps = listOf("Take photo", "Write message", "Confirm", "Share"),
-            backgroundColor = Color(0xFF1E0A4A)
+            backgroundColor = Color(0xFF1E0A4A),
+            onCardClick = { /* navigate to embed screen */ }
         )
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        // ── EXTRACT MESSAGE CARD ──
+        // Button for Extract Message
         FeatureCard(
             icon = Icons.Default.Visibility,
             title = "Extract Message",
             subtitle = "Gallery · Confirm · Reveal · Done",
             steps = listOf("Select image", "Confirm", "Scan", "Done"),
-            backgroundColor = Color(0xFF0A2A1E)
+            backgroundColor = Color(0xFF0A2A1E),
+            onCardClick = { /* navigate to extract screen */ }
         )
     }
 }
 
-// ── REUSABLE FEATURE CARD ──
+// FeatureCard function that is reused in Extract and Embed buttons
 @Composable
 fun FeatureCard(
     icon: ImageVector,
     title: String,
     subtitle: String,
     steps: List<String>,
-    backgroundColor: Color
+    backgroundColor: Color,
+    onCardClick: () -> Unit = {}
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .background(backgroundColor, shape = RoundedCornerShape(12.dp))
             .padding(28.dp) // ← increased from 14.dp
+            .clickable{onCardClick()}
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(
