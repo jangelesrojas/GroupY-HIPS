@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.Button
@@ -33,6 +34,7 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun ExtractPage(
     selectedImageName: String? = null,
+    onBack: () -> Unit = {},
     onSelectImageClick: () -> Unit = {},
     onContinueClick: () -> Unit = {}
 ) {
@@ -41,9 +43,27 @@ fun ExtractPage(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF020611))
+            .background(Color(0xFF0D0D1A))
             .padding(24.dp)
     ) {
+
+        // Back button
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .clickable { onBack() }
+                .padding(bottom = 16.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.ArrowBack,
+                contentDescription = "Back",
+                tint = Color.White,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+            Text("Back", color = Color.White, fontSize = 16.sp)
+        }
+
         // Begin HEADER section
         Row(
             verticalAlignment = Alignment.CenterVertically
