@@ -470,13 +470,6 @@ fun UnlockScreen(
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
-
-                TextButton(onClick = { }) {
-                    Text(
-                        "Forgot ${if (authMethod == AuthMethod.PIN) "PIN" else "pattern"}?",
-                        color = Color(0xFF64748B)
-                    )
-                }
             }
         }
     }

@@ -1,7 +1,6 @@
 package com.example.hips
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -43,15 +42,22 @@ import androidx.compose.foundation.clickable
 
 @Composable
 fun RealMain(
+    theme: AppTheme,
     onOpenSettings: () -> Unit,
     onOpenEmbed: () -> Unit,
     onOpenExtract: () -> Unit,
     onExit: () -> Unit
 ) {
+    val backgroundColor = if (theme == AppTheme.DARK) Color(0xFF0D0D1A) else Color(0xFFF8FAFC)
+    val surfaceColor = if (theme == AppTheme.DARK) Color(0xFF13132A) else Color.White
+    val titleColor = if (theme == AppTheme.DARK) Color.White else Color(0xFF111827)
+    val subtitleColor = if (theme == AppTheme.DARK) Color(0xFF888888) else Color(0xFF6B7280)
+    val headerIconTint = if (theme == AppTheme.DARK) Color.White else Color(0xFF374151)
+    val accentPurple = Color(0xFF7B4FE0)
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0D0D1A))
+            .background(backgroundColor)
             .padding(start = 16.dp, end = 16.dp, bottom = 16.dp, top = 40.dp) // ← increased top padding
     ) {
         // Bar at top for spacing
@@ -64,15 +70,15 @@ fun RealMain(
                 Box(
                     modifier = Modifier
                         .size(40.dp)
-                        .background(Color(0xFF2D1B6B), shape = CircleShape),
+                        .background(if (theme == AppTheme.DARK) Color(0xFF2D1B6B) else Color(0xFFEDE9FE), shape = CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(Icons.Default.Shield, contentDescription = null, tint = Color(0xFF7B4FE0))
                 }
                 Spacer(modifier = Modifier.width(10.dp))
                 Column {
-                    Text("HIPS", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                    Text("STEGANOGRAPHIC SUITE", color = Color(0xFF7B4FE0), fontSize = 10.sp)
+                    Text("HIPS", color = titleColor, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                    Text("STEGANOGRAPHIC SUITE", color = accentPurple, fontSize = 10.sp)
                 }
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -80,7 +86,7 @@ fun RealMain(
                 Icon(
                     imageVector = Icons.Default.Settings,
                     contentDescription = "Settings",
-                    tint = Color.White,
+                    tint = headerIconTint,
                     modifier = Modifier
                         .size(22.dp)
                         .clickable { onOpenSettings() }
@@ -90,7 +96,7 @@ fun RealMain(
                 Icon(
                     imageVector = Icons.Default.ExitToApp,
                     contentDescription = "Exit",
-                    tint = Color.White,
+                    tint = headerIconTint,
                     modifier = Modifier
                         .size(22.dp)
                         .clickable { onExit() }
@@ -127,7 +133,7 @@ fun RealMain(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFF13132A), shape = RoundedCornerShape(8.dp))
+                .background(surfaceColor, shape = RoundedCornerShape(8.dp))
                 .padding(14.dp)
         ) {
             Text(
@@ -135,19 +141,20 @@ fun RealMain(
                         "files using ordinary image files using " +
                         "Least Significant Bit steganography. The images " +
                         "appear completely normal to any observer.",
-                color = Color.White, fontSize = 13.sp
+                color = titleColor, fontSize = 13.sp
             )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
         // Section that says mobile
-        Text("MOBILE", color = Color(0xFF888888), fontSize = 11.sp, letterSpacing = 2.sp)
+        Text("MOBILE", color = subtitleColor, fontSize = 11.sp, letterSpacing = 2.sp)
 
         Spacer(modifier = Modifier.height(8.dp))
 
         // Button for embed message
         FeatureCard(
+            theme = theme,
             icon = Icons.Default.VisibilityOff,
             title = "Embed Message",
             subtitle = "Camera · Gallery · Confirm · Share",
@@ -160,12 +167,13 @@ fun RealMain(
 
         // Button for Extract Message
         FeatureCard(
+            theme = theme,
             icon = Icons.Default.Visibility,
             title = "Extract Message",
             subtitle = "Gallery · Confirm · Reveal · Done",
             steps = listOf("Select image", "Confirm", "Scan", "Done"),
             backgroundColor = Color(0xFF0A2A1E),
-            onCardClick = { /* navigate to extract screen */ }
+            onCardClick = { onOpenExtract() }
         )
     }
 }
@@ -173,6 +181,7 @@ fun RealMain(
 // FeatureCard function that is reused in Extract and Embed buttons
 @Composable
 fun FeatureCard(
+    theme: AppTheme,
     icon: ImageVector,
     title: String,
     subtitle: String,
@@ -180,6 +189,11 @@ fun FeatureCard(
     backgroundColor: Color,
     onCardClick: () -> Unit = {}
 ) {
+    val titleColor = if (theme == AppTheme.DARK) Color.White else Color(0xFF111827)
+    val featureSubtitleColor = if (theme == AppTheme.DARK) Color(0xFFCBD5E1) else Color(0xFF6B7280)
+    val chipColor = if (theme == AppTheme.DARK) Color(0xFF2A2A3A) else Color(0xFFE5E7EB)
+    val chipTextColor = if (theme == AppTheme.DARK) Color(0xFFAAAAAA) else Color(0xFF4B5563)
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -203,8 +217,8 @@ fun FeatureCard(
             }
             Spacer(modifier = Modifier.width(16.dp)) // ← increased from 12.dp
             Column {
-                Text(title, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 22.sp) // ← increased from 16.sp
-                Text(subtitle, color = Color(0xFF888888), fontSize = 15.sp) // ← increased from 11.sp
+                Text(title, color = titleColor, fontWeight = FontWeight.Bold, fontSize = 22.sp) // ← increased from 16.sp
+                Text(subtitle, color = featureSubtitleColor, fontSize = 15.sp) // ← increased from 11.sp
             }
         }
         Spacer(modifier = Modifier.height(20.dp)) // ← increased from 10.dp
@@ -215,12 +229,12 @@ fun FeatureCard(
             steps.forEach { step ->
                 Box(
                     modifier = Modifier
-                        .background(Color(0xFF2A2A3A), shape = RoundedCornerShape(4.dp))
+                        .background(chipColor, shape = RoundedCornerShape(4.dp))
                         .padding(horizontal = 14.dp, vertical = 8.dp)
                 ) {
                     Text(
                         text = step,
-                        color = Color(0xFFAAAAAA),
+                        color = chipTextColor,
                         fontSize = 14.sp,
                         maxLines = 1,          // ← forces single line
                         softWrap = false       // ← prevents wrapping
@@ -230,3 +244,4 @@ fun FeatureCard(
         }
     }
 }
+

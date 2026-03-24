@@ -83,8 +83,17 @@ private data class AuthData(
 
 @Composable
 fun ChangePinGestureScreen(
+    theme: AppTheme,
     onBack: () -> Unit
 ) {
+    // These colors keep this page lined up with the theme setting.
+    val backgroundColor = if (theme == AppTheme.DARK) Color(0xFF0A0A0F) else Color(0xFFF8FAFC)
+    val primaryText = if (theme == AppTheme.DARK) Color.White else Color(0xFF111827)
+    val secondaryText = if (theme == AppTheme.DARK) Color(0xFF64748B) else Color(0xFF6B7280)
+    val cardColor = if (theme == AppTheme.DARK) Color(0xFF1E293B) else Color.White
+    val cardBorder = if (theme == AppTheme.DARK) Color(0xFF334155) else Color(0xFFD1D5DB)
+
+    // This page lets the user update the saved PIN or pattern.
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
@@ -113,6 +122,7 @@ fun ChangePinGestureScreen(
         }
     }
 
+    // I read the current auth data from shared preferences here.
     fun getCurrentAuth(): AuthData {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
@@ -159,6 +169,7 @@ fun ChangePinGestureScreen(
         clearPattern()
     }
 
+    // This handles the number input for each PIN step.
     fun handlePinInput(digit: String) {
         when (step) {
             Step.VERIFY_CURRENT -> {
@@ -283,7 +294,7 @@ fun ChangePinGestureScreen(
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Color(0xFF0A0A0F)
+        color = backgroundColor
     ) {
         Column(
             modifier = Modifier.fillMaxSize()
@@ -298,14 +309,14 @@ fun ChangePinGestureScreen(
                     onClick = onBack,
                     modifier = Modifier
                         .background(
-                            color = Color(0xFF1E293B),
+                            color = cardColor,
                             shape = RoundedCornerShape(12.dp)
                         )
                 ) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Back",
-                        tint = Color(0xFF94A3B8)
+                        tint = secondaryText
                     )
                 }
 
@@ -314,13 +325,13 @@ fun ChangePinGestureScreen(
                 Column {
                     Text(
                         text = "Change PIN / Gesture",
-                        color = Color.White,
+                        color = primaryText,
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
                         text = "Update your authentication method",
-                        color = Color(0xFF64748B),
+                        color = secondaryText,
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
@@ -336,7 +347,9 @@ fun ChangePinGestureScreen(
                     step == Step.CHOOSE_METHOD -> {
                         ChooseMethodContent(
                             getCurrentMethod = { getCurrentAuth().method },
-                            onSelectMethod = { handleMethodSelect(it) }
+                            onSelectMethod = { handleMethodSelect(it) },
+                            primaryText = primaryText,
+                            secondaryText = secondaryText
                         )
                     }
 
@@ -348,7 +361,9 @@ fun ChangePinGestureScreen(
                             confirmPin = confirmValue,
                             error = error,
                             onDigit = { handlePinInput(it) },
-                            onDelete = { handlePinDelete() }
+                            onDelete = { handlePinDelete() },
+                            primaryText = primaryText,
+                            secondaryText = secondaryText
                         )
                     }
 
@@ -365,7 +380,10 @@ fun ChangePinGestureScreen(
                                     pattern.add(dotId)
                                 }
                             },
-                            onPatternEnd = { handlePatternEnd() }
+                            onPatternEnd = { handlePatternEnd() },
+                            primaryText = primaryText,
+                            secondaryText = secondaryText,
+                            cardBorder = cardBorder
                         )
                     }
 
@@ -377,7 +395,9 @@ fun ChangePinGestureScreen(
                             confirmPin = confirmValue,
                             error = error,
                             onDigit = { handlePinInput(it) },
-                            onDelete = { handlePinDelete() }
+                            onDelete = { handlePinDelete() },
+                            primaryText = primaryText,
+                            secondaryText = secondaryText
                         )
                     }
 
@@ -394,7 +414,10 @@ fun ChangePinGestureScreen(
                                     pattern.add(dotId)
                                 }
                             },
-                            onPatternEnd = { handlePatternEnd() }
+                            onPatternEnd = { handlePatternEnd() },
+                            primaryText = primaryText,
+                            secondaryText = secondaryText,
+                            cardBorder = cardBorder
                         )
                     }
 
@@ -406,7 +429,9 @@ fun ChangePinGestureScreen(
                             confirmPin = confirmValue,
                             error = error,
                             onDigit = { handlePinInput(it) },
-                            onDelete = { handlePinDelete() }
+                            onDelete = { handlePinDelete() },
+                            primaryText = primaryText,
+                            secondaryText = secondaryText
                         )
                     }
 
@@ -423,14 +448,18 @@ fun ChangePinGestureScreen(
                                     pattern.add(dotId)
                                 }
                             },
-                            onPatternEnd = { handlePatternEnd() }
+                            onPatternEnd = { handlePatternEnd() },
+                            primaryText = primaryText,
+                            secondaryText = secondaryText,
+                            cardBorder = cardBorder
                         )
                     }
 
                     step == Step.SUCCESS -> {
                         SuccessContent(
                             targetMethod = targetMethod,
-                            onBack = onBack
+                            onBack = onBack,
+                            primaryText = primaryText
                         )
                     }
                 }
@@ -442,7 +471,9 @@ fun ChangePinGestureScreen(
 @Composable
 private fun ChooseMethodContent(
     getCurrentMethod: () -> AuthMethodType,
-    onSelectMethod: (AuthMethodType) -> Unit
+    onSelectMethod: (AuthMethodType) -> Unit,
+    primaryText: Color,
+    secondaryText: Color
 ) {
     val currentMethod = getCurrentMethod()
     val currentMethodName = if (currentMethod == AuthMethodType.PIN) "4-Digit PIN" else "Pattern Lock"
@@ -457,14 +488,14 @@ private fun ChooseMethodContent(
         ) {
             Text(
                 text = "Choose Authentication Method",
-                color = Color.White,
+                color = primaryText,
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = "Select how you want to unlock HIPS",
-                color = Color(0xFF64748B),
+                color = secondaryText,
                 style = MaterialTheme.typography.bodyMedium
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -483,7 +514,8 @@ private fun ChooseMethodContent(
             iconBg = Color(0x335B21B6),
             iconTint = Color(0xFFA78BFA),
             isCurrent = currentMethod == AuthMethodType.PIN,
-            onClick = { onSelectMethod(AuthMethodType.PIN) }
+            onClick = { onSelectMethod(AuthMethodType.PIN) },
+            primaryText = primaryText
         )
 
         MethodCard(
@@ -494,7 +526,8 @@ private fun ChooseMethodContent(
             iconBg = Color(0x332D7D77),
             iconTint = Color(0xFF5EEAD4),
             isCurrent = currentMethod == AuthMethodType.PATTERN,
-            onClick = { onSelectMethod(AuthMethodType.PATTERN) }
+            onClick = { onSelectMethod(AuthMethodType.PATTERN) },
+            primaryText = primaryText
         )
     }
 }
@@ -508,7 +541,8 @@ private fun MethodCard(
     iconBg: Color,
     iconTint: Color,
     isCurrent: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    primaryText: Color
 ) {
     Button(
         onClick = onClick,
@@ -535,7 +569,7 @@ private fun MethodCard(
             Spacer(modifier = Modifier.width(16.dp))
 
             Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.Start) {
-                Text(title, color = Color.White, fontWeight = FontWeight.SemiBold)
+                Text(title, color = primaryText, fontWeight = FontWeight.SemiBold)
                 Text(subtitle, color = Color(0xFF94A3B8), style = MaterialTheme.typography.bodySmall)
             }
 
@@ -564,7 +598,9 @@ private fun PinEntryContent(
     confirmPin: String,
     error: String,
     onDigit: (String) -> Unit,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    primaryText: Color,
+    secondaryText: Color
 ) {
     val currentValue = when (step) {
         Step.VERIFY_CURRENT -> currentPin
@@ -592,7 +628,7 @@ private fun PinEntryContent(
     ) {
         Text(
             text = title,
-            color = Color.White,
+            color = primaryText,
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold
         )
@@ -601,7 +637,7 @@ private fun PinEntryContent(
 
         Text(
             text = subtitle,
-            color = Color(0xFF64748B),
+            color = secondaryText,
             style = MaterialTheme.typography.bodyMedium
         )
 
@@ -681,7 +717,7 @@ private fun PinEntryContent(
                                 ) {
                                     Text(
                                         text = key,
-                                        color = Color.White,
+                                        color = primaryText,
                                         style = MaterialTheme.typography.titleLarge
                                     )
                                 }
@@ -703,7 +739,10 @@ private fun PatternEntryContent(
     isEnabled: Boolean,
     onPatternStart: () -> Unit,
     onDotHit: (Int) -> Unit,
-    onPatternEnd: () -> Unit
+    onPatternEnd: () -> Unit,
+    primaryText: Color,
+    secondaryText: Color,
+    cardBorder: Color
 ) {
     val title = when (step) {
         Step.VERIFY_CURRENT -> "Draw Current Pattern"
@@ -724,7 +763,7 @@ private fun PatternEntryContent(
     ) {
         Text(
             text = title,
-            color = Color.White,
+            color = primaryText,
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold
         )
@@ -733,7 +772,7 @@ private fun PatternEntryContent(
 
         Text(
             text = subtitle,
-            color = Color(0xFF64748B),
+            color = secondaryText,
             style = MaterialTheme.typography.bodyMedium
         )
 
@@ -757,7 +796,8 @@ private fun PatternEntryContent(
             enabled = isEnabled,
             onDotHit = onDotHit,
             onStart = onPatternStart,
-            onFinish = onPatternEnd
+            onFinish = onPatternEnd,
+            cardBorder = cardBorder
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -768,7 +808,7 @@ private fun PatternEntryContent(
             } else {
                 "Touch and drag to connect dots"
             },
-            color = Color(0xFF64748B),
+            color = secondaryText,
             style = MaterialTheme.typography.bodySmall
         )
     }
@@ -781,7 +821,8 @@ private fun PatternCanvas(
     enabled: Boolean,
     onDotHit: (Int) -> Unit,
     onStart: () -> Unit,
-    onFinish: () -> Unit
+    onFinish: () -> Unit,
+    cardBorder: Color
 ) {
     Box(
         modifier = Modifier
@@ -792,7 +833,7 @@ private fun PatternCanvas(
             )
             .border(
                 width = 1.dp,
-                color = Color(0xFF334155),
+                color = cardBorder,
                 shape = RoundedCornerShape(20.dp)
             )
             .alpha(if (enabled) 1f else 0.3f)
@@ -872,7 +913,8 @@ private fun PatternCanvas(
 @Composable
 private fun SuccessContent(
     targetMethod: AuthMethodType,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    primaryText: Color
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
@@ -895,7 +937,7 @@ private fun SuccessContent(
 
         Text(
             text = "Success!",
-            color = Color.White,
+            color = primaryText,
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold
         )

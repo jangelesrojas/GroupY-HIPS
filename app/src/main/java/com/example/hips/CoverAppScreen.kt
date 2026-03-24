@@ -51,18 +51,18 @@ import kotlinx.coroutines.delay
 import java.util.Date
 import java.util.Locale
 
-// I use these constants for the hidden tap-to-unlock feature.
+// This controls the hidden taps needed to open the real app.
 private const val SECRET_TAPS = 5
 private const val SECRET_WINDOW_MS = 3000L
 
-// I store image links here so the journal cards can reuse them.
+// These image links are reused by the fake journal cards.
 private const val JOURNAL_IMAGE =
     "https://images.unsplash.com/photo-1700326276049-ffa3bd12d801?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb3JuaW5nJTIwam91cm5hbCUyMG5vdGVib29rJTIwY296eSUyMHdhcm0lMjBsaWdodHxlbnwxfHx8fDE3NzE4MTIxMjl8MA&ixlib=rb-4.1.0&q=80&w=1080"
 
 private const val MINDFULNESS_IMAGE =
     "https://images.unsplash.com/photo-1758787412766-b63d89e31021?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwZWFjZWZ1bCUyMG1pbmRmdWxuZXNzJTIwbWVkaXRhdGlvbiUyMGdyZWVuJTIwcGxhbnRzfGVufDF8fHx8MTc3MTgxMjEzM3ww&ixlib=rb-4.1.0&q=80&w=1080"
 
-// I made this data class to represent one journal entry on the screen.
+// This stores one journal card item for the cover screen.
 data class JournalEntry(
     val id: Int,
     val date: String,
@@ -73,7 +73,7 @@ data class JournalEntry(
     val image: String?
 )
 
-// This is my sample journal data that shows in the recent reflections section.
+// This is sample content for the fake cover page.
 private val entries = listOf(
     JournalEntry(
         id = 1,
@@ -108,6 +108,7 @@ private val entries = listOf(
 fun CoverAppScreen(
     onUnlock: () -> Unit
 ) {
+    // This page stays the same and does not use the dark or light setting.
     val tapTimes = remember { mutableStateListOf<Long>() }
     var tapFeedback by remember { mutableStateOf(false) }
     var unlocked by remember { mutableStateOf(false) }
@@ -200,19 +201,19 @@ fun CoverAppScreen(
                 }
             }
 
-            // I added a divider line under the header.
+            // Divider under the top row.
             Divider(color = Color(0xFFF3F4F6))
 
-            // I use LazyColumn so the full screen can scroll vertically.
+            // I use LazyColumn so the cover page can scroll.
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(0.dp)
             ) {
                 item {
                     Column(
-                        modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 24.dp, bottom = 16.dp)
+                        modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 24.dp, bottom = 24.dp)
                     ) {
-                        // This row shows today's date with a small light icon.
+                        // This row shows the date at the top.
                         Row(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -492,6 +493,7 @@ private fun ReflectionCard(entry: JournalEntry) {
 }
 
 // --Jose
+
 
 
 

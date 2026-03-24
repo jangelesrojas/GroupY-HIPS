@@ -107,6 +107,22 @@ class MainActivity : ComponentActivity() {
                         }
                     )
                 }
+
+                "extract" -> {
+                    ExtractPage(
+                        theme = appTheme,
+                        onBack = {
+                            currentScreen = "realMain"
+                        },
+                        onSelectImageClick = {
+                            // TO DO: open image picker here
+                        },
+                        onContinueClick = {
+                            // TO DO: move to extract confirm/reveal step
+                        }
+                    )
+
+                }
             }
         }
     }
