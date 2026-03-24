@@ -42,7 +42,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.clickable
 
 @Composable
-fun RealMain() {
+fun RealMain(
+    onOpenSettings: () -> Unit,
+    onOpenEmbed: () -> Unit,
+    onOpenExtract: () -> Unit,
+    onExit: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -76,7 +81,9 @@ fun RealMain() {
                     imageVector = Icons.Default.Settings,
                     contentDescription = "Settings",
                     tint = Color.White,
-                    modifier = Modifier.size(22.dp).clickable{ /* navigate to settings */ }
+                    modifier = Modifier
+                        .size(22.dp)
+                        .clickable { onOpenSettings() }
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 //Exit app icon
@@ -84,7 +91,9 @@ fun RealMain() {
                     imageVector = Icons.Default.ExitToApp,
                     contentDescription = "Exit",
                     tint = Color.White,
-                    modifier = Modifier.size(22.dp).clickable{ /* exit app */ }
+                    modifier = Modifier
+                        .size(22.dp)
+                        .clickable { onExit() }
                 )
             }
         }
@@ -144,7 +153,7 @@ fun RealMain() {
             subtitle = "Camera · Gallery · Confirm · Share",
             steps = listOf("Take photo", "Write message", "Confirm", "Share"),
             backgroundColor = Color(0xFF1E0A4A),
-            onCardClick = { /* navigate to embed screen */ }
+            onCardClick = { onOpenEmbed() }
         )
 
         Spacer(modifier = Modifier.height(10.dp))

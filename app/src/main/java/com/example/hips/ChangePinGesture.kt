@@ -58,6 +58,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.sqrt
 
+private const val PREFS_NAME = "hips_auth"
+private const val DEFAULT_PIN = "1234"
+private const val DEFAULT_PATTERN = "0,1,2,4,8"
 private enum class AuthMethodType {
     PIN, PATTERN
 }
@@ -111,11 +114,11 @@ fun ChangePinGestureScreen(
     }
 
     fun getCurrentAuth(): AuthData {
-        val prefs = context.getSharedPreferences("hips_auth", Context.MODE_PRIVATE)
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
         val savedMethod = prefs.getString("hips-auth-method", "pin") ?: "pin"
-        val savedPin = prefs.getString("hips-pin", "1337") ?: "1337"
-        val savedPattern = prefs.getString("hips-pattern", "0,1,2,4,8") ?: "0,1,2,4,8"
+        val savedPin = prefs.getString("hips-pin", DEFAULT_PIN) ?: DEFAULT_PIN
+        val savedPattern = prefs.getString("hips-pattern", DEFAULT_PATTERN) ?: DEFAULT_PATTERN
 
         return AuthData(
             method = if (savedMethod == "pattern") AuthMethodType.PATTERN else AuthMethodType.PIN,
@@ -125,7 +128,7 @@ fun ChangePinGestureScreen(
     }
 
     fun savePin(pin: String) {
-        val prefs = context.getSharedPreferences("hips_auth", Context.MODE_PRIVATE)
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         prefs.edit()
             .putString("hips-pin", pin)
             .putString("hips-auth-method", "pin")

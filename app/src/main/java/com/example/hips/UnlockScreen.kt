@@ -81,8 +81,9 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
-private const val SECRET_PIN = "1234"
-private val SECRET_PATTERN = listOf(0, 1, 2, 4, 8)
+private const val PREFS_NAME = "hips_auth"
+private const val DEFAULT_PIN = "1234"
+private const val DEFAULT_PATTERN = "0,1,2,4,8"
 
 enum class AuthMethod {
     PIN, PATTERN
@@ -95,7 +96,7 @@ fun UnlockScreen(
 ) {
     val context = LocalContext.current
     val prefs = remember {
-        context.getSharedPreferences("hips_prefs", Context.MODE_PRIVATE)
+        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
     }
     val scope = rememberCoroutineScope()
 
@@ -167,7 +168,7 @@ fun UnlockScreen(
         errorMsg = ""
 
         if (next.length == 4) {
-            val savedPin = prefs.getString("hips-pin", SECRET_PIN) ?: SECRET_PIN
+            val savedPin = prefs.getString("hips-pin", DEFAULT_PIN) ?: DEFAULT_PIN
             if (next == savedPin) {
                 onSuccess()
             } else {
@@ -196,7 +197,7 @@ fun UnlockScreen(
         }
 
         val savedPattern =
-            prefs.getString("hips-pattern", SECRET_PATTERN.joinToString(",")) ?: SECRET_PATTERN.joinToString(",")
+            prefs.getString("hips-pattern", DEFAULT_PATTERN) ?: DEFAULT_PATTERN
         val correctPattern = savedPattern.split(",").mapNotNull { it.toIntOrNull() }
 
         if (pattern.toList() == correctPattern) {

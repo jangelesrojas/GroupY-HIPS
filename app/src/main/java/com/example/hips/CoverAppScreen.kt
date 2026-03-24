@@ -108,37 +108,31 @@ private val entries = listOf(
 fun CoverAppScreen(
     onUnlock: () -> Unit
 ) {
-    // I keep track of tap times so I can detect the secret logo tap pattern.
     val tapTimes = remember { mutableStateListOf<Long>() }
-
-    // I use this for a small press animation when the logo is tapped.
     var tapFeedback by remember { mutableStateOf(false) }
+    var unlocked by remember { mutableStateOf(false) }
 
-    // I format today's date so it shows near the top of the screen.
     val today = remember {
         SimpleDateFormat("EEEE d MMMM yyyy", Locale.UK).format(Date())
     }
 
-    // I use this function to handle taps on the logo.
     fun handleLogoTap() {
+        if (unlocked) return
+
         val now = System.currentTimeMillis()
 
-        // I only keep recent taps that happened within the allowed time window.
         val recent = tapTimes.filter { now - it < SECRET_WINDOW_MS }
         tapTimes.clear()
         tapTimes.addAll(recent)
         tapTimes.add(now)
 
-        // I turn on tap feedback so the logo slightly scales down.
         tapFeedback = true
 
-        // If enough taps happen, I clear the list.
         if (tapTimes.size >= SECRET_TAPS) {
-            tapTimes.clear()
+            unlocked = true
         }
     }
 
-    // I reset the tap animation after a very short delay.
     LaunchedEffect(tapFeedback) {
         if (tapFeedback) {
             delay(100)
@@ -146,23 +140,20 @@ fun CoverAppScreen(
         }
     }
 
-    // If the secret tap count is reached, I call onUnlock().
-    LaunchedEffect(tapTimes.size) {
-        if (tapTimes.isEmpty()) return@LaunchedEffect
-        if (tapTimes.size >= SECRET_TAPS) {
+    LaunchedEffect(unlocked) {
+        if (unlocked) {
             delay(150)
             onUnlock()
+            tapTimes.clear()
+            unlocked = false
         }
     }
 
-    // This is the main screen background.
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color(0xFFFFF7ED)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-
-            // I added a small white bar at the top for spacing/design.
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -170,7 +161,6 @@ fun CoverAppScreen(
                     .background(Color.White)
             )
 
-            // This row is the top header area with the app logo and app name.
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -178,14 +168,12 @@ fun CoverAppScreen(
                     .padding(horizontal = 20.dp, vertical = 16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // I made the logo clickable so it can trigger the hidden unlock.
                 Row(
                     modifier = Modifier
                         .clickable { handleLogoTap() }
                         .scale(if (tapFeedback) 0.95f else 1f),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // This yellow rounded box acts as the app logo background.
                     Box(
                         modifier = Modifier
                             .size(32.dp)
@@ -203,7 +191,6 @@ fun CoverAppScreen(
 
                     Spacer(modifier = Modifier.width(8.dp))
 
-                    // This shows the app name.
                     Text(
                         text = "Luminary",
                         color = Color(0xFF1F2937),

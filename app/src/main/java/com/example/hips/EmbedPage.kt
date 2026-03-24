@@ -34,7 +34,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun EmbedPage() {
+fun EmbedPage(
+    onBack: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -45,7 +47,7 @@ fun EmbedPage() {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
-                .clickable {  }
+                .clickable { onBack() }
                 .padding(bottom = 16.dp)
         ) {
             Icon(
