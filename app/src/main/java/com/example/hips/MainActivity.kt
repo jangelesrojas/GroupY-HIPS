@@ -9,17 +9,20 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            CoverAppScreen(
-                onUnlock = {
-                    // TODO: navigate to next screen after unlock
-                }
-            )
-        }
-    }
+            val showUnlockScreen = true
 
-    companion object {
-        init {
-            System.loadLibrary("hips")
+            if (showUnlockScreen) {
+                ChangePinGestureScreen(
+                    onBack = { /* handle back */ },
+                    // theme = AppTheme.DARK,
+                    // onToggleTheme = { /* toggle theme logic */ },
+                    // onChangePinGesture = { /* navigate to unlock screen */ }
+                )
+            } else {
+                CoverAppScreen(
+                    onUnlock = {}
+                )
+            }
         }
     }
 }
