@@ -1,5 +1,6 @@
 package com.example.hips
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -13,8 +14,20 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
+            val prefs = getSharedPreferences("hips_auth", Context.MODE_PRIVATE)
+
             var currentScreen by rememberSaveable { mutableStateOf("cover") }
             var appTheme by rememberSaveable { mutableStateOf(AppTheme.DARK) }
+
+            fun resetAppSettings() {
+                prefs.edit()
+                    .putString("hips-auth-method", "pin")
+                    .putString("hips-pin", "1234")
+                    .putString("hips-pattern", "0,1,2,4,8")
+                    .apply()
+
+                appTheme = AppTheme.DARK
+            }
 
             when (currentScreen) {
                 "cover" -> {
@@ -27,6 +40,7 @@ class MainActivity : ComponentActivity() {
 
                 "unlock" -> {
                     UnlockScreen(
+                        theme = appTheme,
                         onSuccess = {
                             currentScreen = "realMain"
                         },
@@ -38,6 +52,7 @@ class MainActivity : ComponentActivity() {
 
                 "realMain" -> {
                     RealMain(
+                        theme = appTheme,
                         onOpenSettings = {
                             currentScreen = "settings"
                         },
@@ -66,6 +81,9 @@ class MainActivity : ComponentActivity() {
                                 AppTheme.DARK
                             }
                         },
+                        onResetApp = {
+                            resetAppSettings()
+                        },
                         onChangePinGesture = {
                             currentScreen = "changePinGesture"
                         }
@@ -74,6 +92,7 @@ class MainActivity : ComponentActivity() {
 
                 "changePinGesture" -> {
                     ChangePinGestureScreen(
+                        theme = appTheme,
                         onBack = {
                             currentScreen = "settings"
                         }
@@ -82,12 +101,12 @@ class MainActivity : ComponentActivity() {
 
                 "embed" -> {
                     EmbedPage(
+                        theme = appTheme,
                         onBack = {
                             currentScreen = "realMain"
                         }
                     )
                 }
-
             }
         }
     }

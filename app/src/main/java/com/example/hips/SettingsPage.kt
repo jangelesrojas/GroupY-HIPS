@@ -59,14 +59,14 @@ fun SettingsPage(
     onBack: () -> Unit,
     theme: AppTheme,
     onToggleTheme: () -> Unit,
+    onResetApp: () -> Unit,
     onChangePinGesture: () -> Unit
 ) {
     val settingsSections = listOf(
         SettingsSection(
             title = "Security",
             items = listOf(
-                SettingsItem("Change PIN/Gesture", "Update your unlock method"),
-                SettingsItem("Privacy", "Data and encryption settings")
+                SettingsItem("Change PIN/Gesture", "Update your unlock method")
             )
         ),
         SettingsSection(
@@ -79,7 +79,7 @@ fun SettingsPage(
             title = "About",
             items = listOf(
                 SettingsItem("App Info", "Version and documentation"),
-                SettingsItem("Clear Data", "Reset all settings", danger = true)
+                SettingsItem("Reset App", "Restore dark theme and default password", danger = true)
             )
         )
     )
@@ -190,19 +190,6 @@ fun SettingsPage(
                                     )
                                 }
 
-                                "Privacy" -> {
-                                    SettingsCard(
-                                        label = item.label,
-                                        description = item.description,
-                                        iconType = "shield",
-                                        danger = false,
-                                        theme = theme,
-                                        cardColor = cardColor,
-                                        borderColor = normalBorderColor,
-                                        onClick = { }
-                                    )
-                                }
-
                                 "App Info" -> {
                                     SettingsCard(
                                         label = item.label,
@@ -216,7 +203,7 @@ fun SettingsPage(
                                     )
                                 }
 
-                                "Clear Data" -> {
+                                "Reset App" -> {
                                     SettingsCard(
                                         label = item.label,
                                         description = item.description,
@@ -229,7 +216,7 @@ fun SettingsPage(
                                         } else {
                                             Color(0xFFFECACA)
                                         },
-                                        onClick = { }
+                                        onClick = onResetApp
                                     )
                                 }
                             }
