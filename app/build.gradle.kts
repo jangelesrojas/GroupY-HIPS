@@ -70,7 +70,7 @@ dependencies {
     implementation("androidx.camera:camera-lifecycle:1.3.4")
     implementation("androidx.camera:camera-view:1.3.4")
     debugImplementation("androidx.compose.ui:ui-tooling:1.5.4")
-
+    implementation("androidx.activity:activity-compose:1.9.0")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

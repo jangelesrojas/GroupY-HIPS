@@ -1,6 +1,9 @@
 package com.example.hips
 
+import android.content.ContentValues
 import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
@@ -28,9 +31,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
-import java.io.File
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.layout.*
 
 @Composable
 fun CameraScreen(
@@ -59,12 +60,10 @@ fun CameraScreen(
                 val capture = ImageCapture.Builder().build()
                 imageCapture = capture
 
-                val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-
                 cameraProvider.unbindAll()
                 cameraProvider.bindToLifecycle(
                     lifecycleOwner,
-                    cameraSelector,
+                    CameraSelector.DEFAULT_BACK_CAMERA,
                     preview,
                     capture
                 )
@@ -115,19 +114,40 @@ fun CameraScreen(
 
             Button(
                 onClick = {
-                    val file = File(
-                        context.cacheDir,
-                        "photo_${System.currentTimeMillis()}.jpg"
-                    )
+                    val name = "HIPS_${System.currentTimeMillis()}.jpg"
 
-                    val outputOptions = ImageCapture.OutputFileOptions.Builder(file).build()
+                    val contentValues = ContentValues().apply {
+                        put(MediaStore.MediaColumns.DISPLAY_NAME, name)
+                        put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            put(
+                                MediaStore.MediaColumns.RELATIVE_PATH,
+                                "Pictures/HIPS"
+                            )
+                        }
+                    }
+
+                    val outputOptions = ImageCapture.OutputFileOptions
+                        .Builder(
+                            context.contentResolver,
+                            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                            contentValues
+                        )
+                        .build()
 
                     imageCapture?.takePicture(
                         outputOptions,
                         ContextCompat.getMainExecutor(context),
                         object : ImageCapture.OnImageSavedCallback {
-                            override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                                onPhotoCaptured(Uri.fromFile(file))
+                            override fun onImageSaved(
+                                outputFileResults: ImageCapture.OutputFileResults
+                            ) {
+                                val savedUri = outputFileResults.savedUri
+                                if (savedUri != null) {
+                                    onPhotoCaptured(savedUri)
+                                } else {
+                                    cameraError = "Photo saved, but Uri was null"
+                                }
                             }
 
                             override fun onError(exception: ImageCaptureException) {

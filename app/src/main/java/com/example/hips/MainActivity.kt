@@ -1,9 +1,13 @@
 package com.example.hips
 
 import android.content.Context
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -20,6 +24,13 @@ class MainActivity : ComponentActivity() {
             var appTheme by rememberSaveable { mutableStateOf(AppTheme.DARK) }
             var capturedImageUri by rememberSaveable { mutableStateOf<String?>(null) }
 
+            val pickImageLauncher = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.PickVisualMedia()
+            ) { uri: Uri? ->
+                if (uri != null) {
+                    capturedImageUri = uri.toString()
+                }
+            }
 
             fun resetAppSettings() {
                 prefs.edit()
@@ -39,6 +50,7 @@ class MainActivity : ComponentActivity() {
                         }
                     )
                 }
+
                 "cameraPermission" -> {
                     CameraPermissionHandler(
                         onPermissionGranted = {
@@ -118,13 +130,15 @@ class MainActivity : ComponentActivity() {
                             currentScreen = "realMain"
                         },
                         onTakePhotoClick = {
-                                currentScreen = "camera"
-
+                            currentScreen = "cameraPermission"
                         },
                         onPickFromGalleryClick = {
-                           currentScreen = "embed"
+                            pickImageLauncher.launch(
+                                PickVisualMediaRequest(
+                                    ActivityResultContracts.PickVisualMedia.ImageOnly
+                                )
+                            )
                         }
-
                     )
                 }
 
@@ -135,13 +149,15 @@ class MainActivity : ComponentActivity() {
                             currentScreen = "realMain"
                         },
                         onSelectImageClick = {
-                            // TO DO: open image picker here
+                            pickImageLauncher.launch(
+                                PickVisualMediaRequest(
+                                    ActivityResultContracts.PickVisualMedia.ImageOnly
+                                )
+                            )
                         },
                         onContinueClick = {
-                            // TO DO: move to extract confirm/reveal step
                         }
                     )
-
                 }
 
                 "camera" -> {
