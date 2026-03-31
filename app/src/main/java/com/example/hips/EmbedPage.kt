@@ -1,5 +1,6 @@
 package com.example.hips
 
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -36,7 +37,10 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun EmbedPage(
     theme: AppTheme,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onTakePhotoClick: () -> Unit,
+    onPickFromGalleryClick: () -> Unit
+
 ) {
     val backgroundColor = if (theme == AppTheme.DARK) Color(0xFF0D0D1A) else Color(0xFFF8FAFC)
     val cardPrimary = if (theme == AppTheme.DARK) Color(0xFF1E0A4A) else Color(0xFFF3E8FF)
@@ -113,7 +117,7 @@ fun EmbedPage(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(cardPrimary, shape = RoundedCornerShape(12.dp))
-                .clickable { /* navigate to camera */ }
+                .clickable { onTakePhotoClick() }
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -155,7 +159,7 @@ fun EmbedPage(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(cardSecondary, shape = RoundedCornerShape(12.dp))
-                .clickable { /* navigate to gallery */ }
+                .clickable { onPickFromGalleryClick()}
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -212,6 +216,14 @@ fun EmbedPage(
                 fontSize = 13.sp,
                 lineHeight = 18.sp
             )
+            @Composable
+            fun CameraCaptureScreen(
+                theme: AppTheme,
+                onBack: () -> Unit,
+                onPhotoCaptured: (Uri) -> Unit
+            ){
+
+            }
         }
     }
 }

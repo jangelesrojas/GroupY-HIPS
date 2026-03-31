@@ -18,6 +18,8 @@ class MainActivity : ComponentActivity() {
 
             var currentScreen by rememberSaveable { mutableStateOf("cover") }
             var appTheme by rememberSaveable { mutableStateOf(AppTheme.DARK) }
+            var capturedImageUri by rememberSaveable { mutableStateOf<String?>(null) }
+
 
             fun resetAppSettings() {
                 prefs.edit()
@@ -34,6 +36,16 @@ class MainActivity : ComponentActivity() {
                     CoverAppScreen(
                         onUnlock = {
                             currentScreen = "unlock"
+                        }
+                    )
+                }
+                "cameraPermission" -> {
+                    CameraPermissionHandler(
+                        onPermissionGranted = {
+                            currentScreen = "camera"
+                        },
+                        onBack = {
+                            currentScreen = "embed"
                         }
                     )
                 }
@@ -104,7 +116,15 @@ class MainActivity : ComponentActivity() {
                         theme = appTheme,
                         onBack = {
                             currentScreen = "realMain"
+                        },
+                        onTakePhotoClick = {
+                                currentScreen = "camera"
+
+                        },
+                        onPickFromGalleryClick = {
+                           currentScreen = "embed"
                         }
+
                     )
                 }
 
@@ -122,6 +142,18 @@ class MainActivity : ComponentActivity() {
                         }
                     )
 
+                }
+
+                "camera" -> {
+                    CameraScreen(
+                        onBack = {
+                            currentScreen = "embed"
+                        },
+                        onPhotoCaptured = { uri ->
+                            capturedImageUri = uri.toString()
+                            currentScreen = "embed"
+                        }
+                    )
                 }
             }
         }
