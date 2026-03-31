@@ -1,8 +1,10 @@
 package com.example.hips
 
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,6 +19,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.Button
@@ -26,21 +29,27 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 
 @Composable
 fun ExtractPage(
     theme: AppTheme,
     selectedImageName: String? = null,
+    selectedImageUri: Uri? = null,
     onBack: () -> Unit = {},
     onSelectImageClick: () -> Unit = {},
     onContinueClick: () -> Unit = {}
 ) {
-    val hasImage = selectedImageName != null
+    val hasImage = selectedImageUri != null
 
+    val previewOverlayColor = if (theme == AppTheme.DARK) Color(0xCC030C22) else Color(0xCCFFFFFF)
+    val changeButtonColor = if (theme == AppTheme.DARK) Color(0xFF13233A) else Color(0xFFF3F4F6)
     val backgroundColor = if (theme == AppTheme.DARK) Color(0xFF0D0D1A) else Color(0xFFF8FAFC)
     val titleColor = if (theme == AppTheme.DARK) Color.White else Color(0xFF111827)
     val subtitleColor = if (theme == AppTheme.DARK) Color(0xFF667799) else Color(0xFF6B7280)
@@ -237,42 +246,123 @@ fun ExtractPage(
                     shape = RoundedCornerShape(20.dp)
                 )
                 .background(cardColor, RoundedCornerShape(20.dp))
-                .clickable { onSelectImageClick() },
+                .clickable { onSelectImageClick() }
+                .padding(12.dp),
             contentAlignment = Alignment.Center
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+            if (selectedImageUri != null) {
+
+                // Selected image preview state
                 Box(
-                    modifier = Modifier
-                        .size(64.dp)
-                        .background(imageIconBoxColor, RoundedCornerShape(16.dp)),
-                    contentAlignment = Alignment.Center
+                    modifier = Modifier.fillMaxSize()
                 ) {
-                    Icon(
-                        imageVector = Icons.Filled.PhotoLibrary,
-                        contentDescription = "Image icon",
-                        tint = inactiveStepColor,
-                        modifier = Modifier.size(30.dp)
+                    AsyncImage(
+                        model = selectedImageUri,
+                        contentDescription = "Selected image preview",
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(RoundedCornerShape(16.dp)),
+                        contentScale = ContentScale.Crop
                     )
+
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .fillMaxWidth()
+                            .background(previewOverlayColor)
+                            .padding(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(
+                                    text = selectedImageName ?: "Selected image",
+                                    color = titleColor,
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+
+                                Spacer(modifier = Modifier.height(4.dp))
+
+                                Text(
+                                    text = "Tap to change image",
+                                    color = helperTextColor,
+                                    fontSize = 13.sp
+                                )
+                            }
+
+                            Box(
+                                modifier = Modifier
+                                    .background(changeButtonColor, RoundedCornerShape(12.dp))
+                                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Edit,
+                                        contentDescription = "Change image",
+                                        tint = titleColor,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+
+                                    Spacer(modifier = Modifier.width(6.dp))
+
+                                    Text(
+                                        text = "Change",
+                                        color = titleColor,
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
 
-                Spacer(modifier = Modifier.height(18.dp))
+            } else {
 
-                Text(
-                    text = if (selectedImageName == null) "Select Image" else selectedImageName,
-                    color = titleColor,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
+                // Empty image select state
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(64.dp)
+                            .background(imageIconBoxColor, RoundedCornerShape(16.dp)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.PhotoLibrary,
+                            contentDescription = "Image icon",
+                            tint = inactiveStepColor,
+                            modifier = Modifier.size(30.dp)
+                        )
+                    }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(18.dp))
 
-                Text(
-                    text = if (selectedImageName == null) "Tap to open gallery" else "Tap to change image",
-                    color = helperTextColor,
-                    fontSize = 15.sp
-                )
+                    Text(
+                        text = "Select Image",
+                        color = titleColor,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = "Tap to open gallery",
+                        color = helperTextColor,
+                        fontSize = 15.sp
+                    )
+                }
             }
         }
 
@@ -287,9 +377,9 @@ fun ExtractPage(
                 .height(56.dp),
             shape = RoundedCornerShape(18.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = buttonColor,
+                containerColor = if (hasImage) Color(0xFF14B8A6) else buttonColor,
                 disabledContainerColor = buttonDisabledColor,
-                contentColor = buttonContentColor,
+                contentColor = if (hasImage) Color.White else buttonContentColor,
                 disabledContentColor = buttonDisabledContentColor
             )
         ) {

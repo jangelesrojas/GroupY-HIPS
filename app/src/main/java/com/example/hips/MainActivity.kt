@@ -145,7 +145,10 @@ class MainActivity : ComponentActivity() {
                 "extract" -> {
                     ExtractPage(
                         theme = appTheme,
+                        selectedImageUri = capturedImageUri?.let { Uri.parse(it) },
+                        selectedImageName = "Selected image",
                         onBack = {
+                            capturedImageUri = null
                             currentScreen = "realMain"
                         },
                         onSelectImageClick = {
