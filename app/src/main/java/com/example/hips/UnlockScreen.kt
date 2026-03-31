@@ -91,9 +91,20 @@ enum class AuthMethod {
 
 @Composable
 fun UnlockScreen(
+    theme: AppTheme,
     onSuccess: () -> Unit,
     onBack: () -> Unit
 ) {
+    val backgroundColor = if (theme == AppTheme.DARK) Color(0xFF0D0D1A) else Color(0xFFF8FAFC)
+    val cardPrimary = if (theme == AppTheme.DARK) Color(0xFF1E0A4A) else Color(0xFFF3E8FF)
+    val cardSecondary = if (theme == AppTheme.DARK) Color(0xFF13132A) else Color.White
+    val iconPrimaryBg = if (theme == AppTheme.DARK) Color(0xFF2D1B6B) else Color(0xFFE9D5FF)
+    val iconSecondaryBg = if (theme == AppTheme.DARK) Color(0xFF1E1E3A) else Color(0xFFE5E7EB)
+    val titleColor = if (theme == AppTheme.DARK) Color.White else Color(0xFF111827)
+    val subtitleColor = if (theme == AppTheme.DARK) Color(0xFF888888) else Color(0xFF6B7280)
+    val bodyColor = if (theme == AppTheme.DARK) Color(0xFFCCCCCC) else Color(0xFF4B5563)
+    val accent = Color(0xFF7B4FE0)
+
     val context = LocalContext.current
     val prefs = remember {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -209,7 +220,7 @@ fun UnlockScreen(
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = Color(0xFF0A0A0F)
+        color = backgroundColor
     ) {
         Box(
             modifier = Modifier
@@ -289,7 +300,7 @@ fun UnlockScreen(
                 if (authMethod == AuthMethod.PIN) {
                     Text(
                         "Enter your PIN",
-                        color = Color.White,
+                        //color = primaryText,
                         style = MaterialTheme.typography.headlineSmall
                     )
                     Text(
@@ -459,13 +470,6 @@ fun UnlockScreen(
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
-
-                TextButton(onClick = { }) {
-                    Text(
-                        "Forgot ${if (authMethod == AuthMethod.PIN) "PIN" else "pattern"}?",
-                        color = Color(0xFF64748B)
-                    )
-                }
             }
         }
     }

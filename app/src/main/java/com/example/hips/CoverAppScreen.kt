@@ -3,7 +3,6 @@ package com.example.hips
 import android.icu.text.SimpleDateFormat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,7 +24,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -51,18 +49,18 @@ import kotlinx.coroutines.delay
 import java.util.Date
 import java.util.Locale
 
-// I use these constants for the hidden tap-to-unlock feature.
+// This controls the hidden taps needed to open the real app.
 private const val SECRET_TAPS = 5
 private const val SECRET_WINDOW_MS = 3000L
 
-// I store image links here so the journal cards can reuse them.
+// These image links are reused by the fake journal cards.
 private const val JOURNAL_IMAGE =
     "https://images.unsplash.com/photo-1700326276049-ffa3bd12d801?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb3JuaW5nJTIwam91cm5hbCUyMG5vdGVib29rJTIwY296eSUyMHdhcm0lMjBsaWdodHxlbnwxfHx8fDE3NzE4MTIxMjl8MA&ixlib=rb-4.1.0&q=80&w=1080"
 
 private const val MINDFULNESS_IMAGE =
     "https://images.unsplash.com/photo-1758787412766-b63d89e31021?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwZWFjZWZ1bCUyMG1pbmRmdWxuZXNzJTIwbWVkaXRhdGlvbiUyMGdyZWVuJTIwcGxhbnRzfGVufDF8fHx8MTc3MTgxMjEzM3ww&ixlib=rb-4.1.0&q=80&w=1080"
 
-// I made this data class to represent one journal entry on the screen.
+// This stores one journal card item for the cover screen.
 data class JournalEntry(
     val id: Int,
     val date: String,
@@ -73,7 +71,7 @@ data class JournalEntry(
     val image: String?
 )
 
-// This is my sample journal data that shows in the recent reflections section.
+// This is sample content for the fake cover page.
 private val entries = listOf(
     JournalEntry(
         id = 1,
@@ -108,6 +106,7 @@ private val entries = listOf(
 fun CoverAppScreen(
     onUnlock: () -> Unit
 ) {
+    // This page stays the same and does not use the dark or light setting.
     val tapTimes = remember { mutableStateListOf<Long>() }
     var tapFeedback by remember { mutableStateOf(false) }
     var unlocked by remember { mutableStateOf(false) }
@@ -200,19 +199,15 @@ fun CoverAppScreen(
                 }
             }
 
-            // I added a divider line under the header.
             Divider(color = Color(0xFFF3F4F6))
 
-            // I use LazyColumn so the full screen can scroll vertically.
             LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(0.dp)
+                modifier = Modifier.fillMaxSize()
             ) {
                 item {
                     Column(
-                        modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 24.dp, bottom = 16.dp)
+                        modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 24.dp, bottom = 20.dp)
                     ) {
-                        // This row shows today's date with a small light icon.
                         Row(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -233,7 +228,6 @@ fun CoverAppScreen(
 
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        // This section holds the greeting and the small update card.
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             verticalAlignment = Alignment.Top
@@ -249,7 +243,6 @@ fun CoverAppScreen(
 
                             Spacer(modifier = Modifier.width(12.dp))
 
-                            // This card is a small announcement/info card.
                             Card(
                                 shape = RoundedCornerShape(16.dp),
                                 colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -275,7 +268,6 @@ fun CoverAppScreen(
 
                         Spacer(modifier = Modifier.height(4.dp))
 
-                        // This is a short prompt for the user.
                         Text(
                             text = "How are you feeling today?",
                             color = Color(0xFF6B7280),
@@ -285,7 +277,6 @@ fun CoverAppScreen(
                 }
 
                 item {
-                    // This card holds the quote of the day.
                     Box(modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)) {
                         Card(
                             shape = RoundedCornerShape(24.dp),
@@ -330,39 +321,33 @@ fun CoverAppScreen(
                 }
 
                 item {
-                    // These are the three small stat cards below the quote.
-                    Row(
+                    StatCard(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 20.dp, vertical = 12.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        StatCard("14", "Day Streak")
-                        StatCard("38", "Entries")
-                        StatCard("210", "Minutes")
-                    }
+                            .padding(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 8.dp),
+                        value = "14",
+                        label = "Day Streak"
+                    )
                 }
 
                 item {
-                    // This is the section title for the journal entries.
-                    Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)) {
+                    Column(
+                        modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 0.dp, bottom = 4.dp)
+                    ) {
                         Text(
                             text = "Recent Reflections",
                             color = Color(0xFF374151),
                             fontSize = 14.sp,
                             fontWeight = FontWeight.SemiBold
                         )
-                        Spacer(modifier = Modifier.height(12.dp))
                     }
                 }
 
-                // I loop through all journal entries and display each one as a card.
                 items(entries) { entry ->
                     ReflectionCard(entry = entry)
                 }
 
                 item {
-                    // I added a little extra space at the bottom of the screen.
                     Spacer(modifier = Modifier.height(24.dp))
                 }
             }
@@ -372,12 +357,13 @@ fun CoverAppScreen(
 
 @Composable
 private fun StatCard(
+    modifier: Modifier = Modifier,
     value: String,
     label: String
 ) {
-    //made this reusable card for showing quick stats like streaks and entries.
+    // made this reusable card for showing quick stats like streaks and entries.
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier,
         shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
@@ -405,7 +391,7 @@ private fun StatCard(
 
 @Composable
 private fun ReflectionCard(entry: JournalEntry) {
-    // this card to displays one journal/reflection entry.
+    // this card displays one journal/reflection entry.
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -414,8 +400,6 @@ private fun ReflectionCard(entry: JournalEntry) {
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
         Row(modifier = Modifier.fillMaxWidth()) {
-
-            // If the entry has an image, I show it on the left side.
             if (entry.image != null) {
                 AsyncImage(
                     model = entry.image,
@@ -426,7 +410,6 @@ private fun ReflectionCard(entry: JournalEntry) {
                 )
             }
 
-            // The right side shows the entry text details.
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -436,7 +419,6 @@ private fun ReflectionCard(entry: JournalEntry) {
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // This shows the journal entry date.
                     Text(
                         text = entry.date,
                         color = Color(0xFFD97706),
@@ -446,9 +428,12 @@ private fun ReflectionCard(entry: JournalEntry) {
 
                     Spacer(modifier = Modifier.weight(1f))
 
-                    //loops through the tags and show each one as a small label.
-                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        entry.tags.forEach { tag ->
+                    Row {
+                        entry.tags.forEachIndexed { index, tag ->
+                            if (index > 0) {
+                                Spacer(modifier = Modifier.width(4.dp))
+                            }
+
                             Box(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(50))
@@ -467,7 +452,6 @@ private fun ReflectionCard(entry: JournalEntry) {
 
                 Spacer(modifier = Modifier.height(6.dp))
 
-                // This shows the entry title.
                 Text(
                     text = entry.title,
                     color = Color(0xFF1F2937),
@@ -477,7 +461,6 @@ private fun ReflectionCard(entry: JournalEntry) {
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                // This shows a short preview of the journal entry.
                 Text(
                     text = entry.preview,
                     color = Color(0xFF6B7280),
@@ -492,6 +475,10 @@ private fun ReflectionCard(entry: JournalEntry) {
 }
 
 // --Jose
+
+
+
+
 
 
 

@@ -1,5 +1,6 @@
 package com.example.hips
 
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -35,12 +36,26 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun EmbedPage(
-    onBack: () -> Unit
+    theme: AppTheme,
+    onBack: () -> Unit,
+    onTakePhotoClick: () -> Unit,
+    onPickFromGalleryClick: () -> Unit
+
 ) {
+    val backgroundColor = if (theme == AppTheme.DARK) Color(0xFF0D0D1A) else Color(0xFFF8FAFC)
+    val cardPrimary = if (theme == AppTheme.DARK) Color(0xFF1E0A4A) else Color(0xFFF3E8FF)
+    val cardSecondary = if (theme == AppTheme.DARK) Color(0xFF13132A) else Color.White
+    val iconPrimaryBg = if (theme == AppTheme.DARK) Color(0xFF2D1B6B) else Color(0xFFE9D5FF)
+    val iconSecondaryBg = if (theme == AppTheme.DARK) Color(0xFF1E1E3A) else Color(0xFFE5E7EB)
+    val titleColor = if (theme == AppTheme.DARK) Color.White else Color(0xFF111827)
+    val subtitleColor = if (theme == AppTheme.DARK) Color(0xFF888888) else Color(0xFF6B7280)
+    val bodyColor = if (theme == AppTheme.DARK) Color(0xFFCCCCCC) else Color(0xFF4B5563)
+    val accent = Color(0xFF7B4FE0)
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0D0D1A))
+            .background(backgroundColor)
             .padding(start = 16.dp, end = 16.dp, bottom = 16.dp, top = 40.dp)
     ) {
         // Back button
@@ -53,11 +68,11 @@ fun EmbedPage(
             Icon(
                 imageVector = Icons.Default.ArrowBack,
                 contentDescription = "Back",
-                tint = Color.White,
+                tint = titleColor,
                 modifier = Modifier.size(20.dp)
             )
             Spacer(modifier = Modifier.width(6.dp))
-            Text("Back", color = Color.White, fontSize = 16.sp)
+            Text("Back", color = titleColor, fontSize = 16.sp)
         }
 
         // Title row
@@ -65,20 +80,20 @@ fun EmbedPage(
             Box(
                 modifier = Modifier
                     .size(44.dp)
-                    .background(Color(0xFF2D1B6B), shape = RoundedCornerShape(10.dp)),
+                    .background(iconPrimaryBg, shape = RoundedCornerShape(10.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.Description,
                     contentDescription = null,
-                    tint = Color(0xFF7B4FE0),
+                    tint = accent,
                     modifier = Modifier.size(24.dp)
                 )
             }
             Spacer(modifier = Modifier.width(12.dp))
             Column {
-                Text("Embed Message", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 22.sp)
-                Text("Hide a secret in your image", color = Color(0xFF888888), fontSize = 13.sp)
+                Text("Embed Message", color = titleColor, fontWeight = FontWeight.Bold, fontSize = 22.sp)
+                Text("Hide a secret in your image", color = subtitleColor, fontSize = 13.sp)
             }
         }
 
@@ -90,7 +105,7 @@ fun EmbedPage(
         // Description test below title
         Text(
             text = "Choose how to get your cover image. You can take a photo directly or pick one from your gallery.",
-            color = Color(0xFFCCCCCC),
+            color = bodyColor,
             fontSize = 14.sp,
             lineHeight = 20.sp
         )
@@ -101,30 +116,30 @@ fun EmbedPage(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFF1E0A4A), shape = RoundedCornerShape(12.dp))
-                .clickable { /* navigate to camera */ }
+                .background(cardPrimary, shape = RoundedCornerShape(12.dp))
+                .clickable { onTakePhotoClick() }
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
                     .size(52.dp)
-                    .background(Color(0xFF2D1B6B), shape = RoundedCornerShape(10.dp)),
+                    .background(iconPrimaryBg, shape = RoundedCornerShape(10.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.CameraAlt,
                     contentDescription = null,
-                    tint = Color(0xFF7B4FE0),
+                    tint = accent,
                     modifier = Modifier.size(28.dp)
                 )
             }
             Spacer(modifier = Modifier.width(14.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text("Take a Photo", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Text("Take a Photo", color = titleColor, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 Text(
                     "Use your camera to capture a new image",
-                    color = Color(0xFF888888),
+                    color = subtitleColor,
                     fontSize = 13.sp,
                     lineHeight = 18.sp
                 )
@@ -132,7 +147,7 @@ fun EmbedPage(
             Icon(
                 imageVector = Icons.Default.ChevronRight,
                 contentDescription = null,
-                tint = Color(0xFF7B4FE0),
+                tint = accent,
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -143,15 +158,15 @@ fun EmbedPage(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFF13132A), shape = RoundedCornerShape(12.dp))
-                .clickable { /* navigate to gallery */ }
+                .background(cardSecondary, shape = RoundedCornerShape(12.dp))
+                .clickable { onPickFromGalleryClick()}
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
                     .size(52.dp)
-                    .background(Color(0xFF1E1E3A), shape = RoundedCornerShape(10.dp)),
+                    .background(iconSecondaryBg, shape = RoundedCornerShape(10.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -163,10 +178,10 @@ fun EmbedPage(
             }
             Spacer(modifier = Modifier.width(14.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text("Choose from Gallery", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Text("Choose from Gallery", color = titleColor, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 Text(
                     "Select an existing image or JPEG",
-                    color = Color(0xFF888888),
+                    color = subtitleColor,
                     fontSize = 13.sp
                 )
             }
@@ -201,6 +216,14 @@ fun EmbedPage(
                 fontSize = 13.sp,
                 lineHeight = 18.sp
             )
+            @Composable
+            fun CameraCaptureScreen(
+                theme: AppTheme,
+                onBack: () -> Unit,
+                onPhotoCaptured: (Uri) -> Unit
+            ){
+
+            }
         }
     }
 }

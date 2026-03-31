@@ -88,20 +88,6 @@ class MainActivity : ComponentActivity() {
                     )
                 }
 
-                "extract" -> {
-                    ExtractPage(
-                        onBack = {
-                            currentScreen = "realMain"
-                        },
-                        onSelectImageClick = {
-                            // TODO: open image picker here
-                        },
-                        onContinueClick = {
-                            // TODO: move to extract confirm/reveal step
-                        }
-                    )
-                }
-
             }
         }
     }

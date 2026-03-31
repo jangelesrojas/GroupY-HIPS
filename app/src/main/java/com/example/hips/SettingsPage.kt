@@ -10,10 +10,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -23,13 +23,16 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Palette
-import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,6 +41,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 
 enum class AppTheme {
     LIGHT, DARK
@@ -59,14 +63,23 @@ fun SettingsPage(
     onBack: () -> Unit,
     theme: AppTheme,
     onToggleTheme: () -> Unit,
+    onResetApp: () -> Unit,
     onChangePinGesture: () -> Unit
 ) {
+    var showResetPopup by remember { mutableStateOf(false) }
+
+    if (showResetPopup) {
+        LaunchedEffect(showResetPopup) {
+            delay(1600)
+            showResetPopup = false
+        }
+    }
+
     val settingsSections = listOf(
         SettingsSection(
             title = "Security",
             items = listOf(
-                SettingsItem("Change PIN/Gesture", "Update your unlock method"),
-                SettingsItem("Privacy", "Data and encryption settings")
+                SettingsItem("Change PIN/Gesture", "Update your unlock method")
             )
         ),
         SettingsSection(
@@ -79,7 +92,7 @@ fun SettingsPage(
             title = "About",
             items = listOf(
                 SettingsItem("App Info", "Version and documentation"),
-                SettingsItem("Clear Data", "Reset all settings", danger = true)
+                SettingsItem("Reset App", "Restore dark theme and default password", danger = true)
             )
         )
     )
@@ -94,168 +107,188 @@ fun SettingsPage(
     val violetIconBg = if (theme == AppTheme.DARK) Color(0xFF7C3AED).copy(alpha = 0.10f) else Color(0xFFEDE9FE)
     val violetIconTint = if (theme == AppTheme.DARK) Color(0xFFC4B5FD) else Color(0xFF7C3AED)
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(backgroundColor)
     ) {
-        // Header
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .statusBarsPadding()
-                .border(0.5.dp, headerBorderColor)
-                .padding(start = 24.dp, end = 24.dp, top = 12.dp, bottom = 20.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(36.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(if (theme == AppTheme.DARK) Color(0xFF1E293B).copy(alpha = 0.5f) else Color(0xFFE5E7EB))
-                    .clickable { onBack() },
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Back",
-                    tint = if (theme == AppTheme.DARK) Color(0xFF94A3B8) else Color(0xFF4B5563),
-                    modifier = Modifier.size(16.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.size(12.dp))
-
-            Column {
-                Text(
-                    text = "Settings",
-                    color = titleColor,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = "Configure your preferences",
-                    color = subtitleColor,
-                    fontSize = 12.sp
-                )
-            }
-        }
-
-        // Content
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 24.dp, vertical = 24.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+            modifier = Modifier.fillMaxSize()
         ) {
-            settingsSections.forEach { section ->
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        text = section.title.uppercase(),
-                        color = subtitleColor,
-                        fontSize = 12.sp,
-                        fontFamily = FontFamily.Monospace,
-                        letterSpacing = 1.5.sp,
-                        modifier = Modifier.padding(start = 4.dp)
+            // Header
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .statusBarsPadding()
+                    .border(0.5.dp, headerBorderColor)
+                    .padding(start = 24.dp, end = 24.dp, top = 12.dp, bottom = 20.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(if (theme == AppTheme.DARK) Color(0xFF1E293B).copy(alpha = 0.5f) else Color(0xFFE5E7EB))
+                        .clickable { onBack() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = if (theme == AppTheme.DARK) Color(0xFF94A3B8) else Color(0xFF4B5563),
+                        modifier = Modifier.size(16.dp)
                     )
+                }
 
+                Spacer(modifier = Modifier.size(12.dp))
+
+                Column {
+                    Text(
+                        text = "Settings",
+                        color = titleColor,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Configure your preferences",
+                        color = subtitleColor,
+                        fontSize = 12.sp
+                    )
+                }
+            }
+
+            // Content
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 24.dp, vertical = 24.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                settingsSections.forEach { section ->
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        section.items.forEach { item ->
-                            when (item.label) {
-                                "Theme" -> {
-                                    ThemeSettingCard(
-                                        theme = theme,
-                                        cardColor = cardColor,
-                                        borderColor = normalBorderColor,
-                                        subtitleColor = subtitleColor,
-                                        titleColor = titleColor,
-                                        iconBg = violetIconBg,
-                                        iconTint = violetIconTint,
-                                        trailingColor = hoverTextColor,
-                                        onClick = onToggleTheme
-                                    )
-                                }
+                        Text(
+                            text = section.title.uppercase(),
+                            color = subtitleColor,
+                            fontSize = 12.sp,
+                            fontFamily = FontFamily.Monospace,
+                            letterSpacing = 1.5.sp,
+                            modifier = Modifier.padding(start = 4.dp)
+                        )
 
-                                "Change PIN/Gesture" -> {
-                                    SettingsCard(
-                                        label = item.label,
-                                        description = item.description,
-                                        iconType = "lock",
-                                        danger = false,
-                                        theme = theme,
-                                        cardColor = cardColor,
-                                        borderColor = normalBorderColor,
-                                        onClick = onChangePinGesture
-                                    )
-                                }
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            section.items.forEach { item ->
+                                when (item.label) {
+                                    "Theme" -> {
+                                        ThemeSettingCard(
+                                            theme = theme,
+                                            cardColor = cardColor,
+                                            borderColor = normalBorderColor,
+                                            subtitleColor = subtitleColor,
+                                            titleColor = titleColor,
+                                            iconBg = violetIconBg,
+                                            iconTint = violetIconTint,
+                                            trailingColor = hoverTextColor,
+                                            onClick = onToggleTheme
+                                        )
+                                    }
 
-                                "Privacy" -> {
-                                    SettingsCard(
-                                        label = item.label,
-                                        description = item.description,
-                                        iconType = "shield",
-                                        danger = false,
-                                        theme = theme,
-                                        cardColor = cardColor,
-                                        borderColor = normalBorderColor,
-                                        onClick = { }
-                                    )
-                                }
+                                    "Change PIN/Gesture" -> {
+                                        SettingsCard(
+                                            label = item.label,
+                                            description = item.description,
+                                            iconType = "lock",
+                                            danger = false,
+                                            theme = theme,
+                                            cardColor = cardColor,
+                                            borderColor = normalBorderColor,
+                                            onClick = onChangePinGesture
+                                        )
+                                    }
 
-                                "App Info" -> {
-                                    SettingsCard(
-                                        label = item.label,
-                                        description = item.description,
-                                        iconType = "info",
-                                        danger = false,
-                                        theme = theme,
-                                        cardColor = cardColor,
-                                        borderColor = normalBorderColor,
-                                        onClick = { }
-                                    )
-                                }
+                                    "App Info" -> {
+                                        SettingsCard(
+                                            label = item.label,
+                                            description = item.description,
+                                            iconType = "info",
+                                            danger = false,
+                                            theme = theme,
+                                            cardColor = cardColor,
+                                            borderColor = normalBorderColor,
+                                            onClick = { }
+                                        )
+                                    }
 
-                                "Clear Data" -> {
-                                    SettingsCard(
-                                        label = item.label,
-                                        description = item.description,
-                                        iconType = "delete",
-                                        danger = true,
-                                        theme = theme,
-                                        cardColor = cardColor,
-                                        borderColor = if (theme == AppTheme.DARK) {
-                                            Color(0xFF7F1D1D).copy(alpha = 0.3f)
-                                        } else {
-                                            Color(0xFFFECACA)
-                                        },
-                                        onClick = { }
-                                    )
+                                    "Reset App" -> {
+                                        SettingsCard(
+                                            label = item.label,
+                                            description = item.description,
+                                            iconType = "delete",
+                                            danger = true,
+                                            theme = theme,
+                                            cardColor = cardColor,
+                                            borderColor = if (theme == AppTheme.DARK) {
+                                                Color(0xFF7F1D1D).copy(alpha = 0.3f)
+                                            } else {
+                                                Color(0xFFFECACA)
+                                            },
+                                            onClick = {
+                                                onResetApp()
+                                                showResetPopup = true
+                                            }
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
 
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "HIPS v1.0.0",
+                        color = if (theme == AppTheme.DARK) Color(0xFF475569) else Color(0xFF9CA3AF),
+                        fontSize = 12.sp,
+                        fontFamily = FontFamily.Monospace
+                    )
+                    Text(
+                        text = "Steganographic Suite",
+                        color = if (theme == AppTheme.DARK) Color(0xFF334155) else Color(0xFF6B7280),
+                        fontSize = 10.sp,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                }
+            }
+        }
+
+        if (showResetPopup) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "HIPS v1.0.0",
-                    color = if (theme == AppTheme.DARK) Color(0xFF475569) else Color(0xFF9CA3AF),
-                    fontSize = 12.sp,
-                    fontFamily = FontFamily.Monospace
-                )
-                Text(
-                    text = "Steganographic Suite",
-                    color = if (theme == AppTheme.DARK) Color(0xFF334155) else Color(0xFF6B7280),
-                    fontSize = 10.sp,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(if (theme == AppTheme.DARK) Color(0xFF111827) else Color.White)
+                        .border(
+                            1.dp,
+                            if (theme == AppTheme.DARK) Color(0xFF334155) else Color(0xFFD1D5DB),
+                            RoundedCornerShape(18.dp)
+                        )
+                        .padding(horizontal = 24.dp, vertical = 18.dp)
+                ) {
+                    Text(
+                        text = "App has been reset",
+                        color = if (theme == AppTheme.DARK) Color.White else Color(0xFF111827),
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
             }
         }
     }
@@ -304,31 +337,22 @@ fun ThemeSettingCard(
             Text(
                 text = "Theme",
                 color = titleColor,
-                fontWeight = FontWeight.Medium
+                fontSize = 15.sp,
+                fontWeight = FontWeight.SemiBold
             )
             Text(
-                text = if (theme == AppTheme.DARK) "Dark mode" else "Light mode",
+                text = if (theme == AppTheme.DARK) "Switch to light mode" else "Switch to dark mode",
                 color = subtitleColor,
-                fontSize = 12.sp,
-                modifier = Modifier.padding(top = 2.dp)
+                fontSize = 12.sp
             )
         }
 
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = if (theme == AppTheme.DARK) "DARK" else "LIGHT",
-                color = trailingColor,
-                fontSize = 12.sp,
-                fontFamily = FontFamily.Monospace
-            )
-            Spacer(modifier = Modifier.size(8.dp))
-            Icon(
-                imageVector = Icons.Default.ChevronRight,
-                contentDescription = "Open",
-                tint = trailingColor,
-                modifier = Modifier.size(16.dp)
-            )
-        }
+        Icon(
+            imageVector = Icons.Default.ChevronRight,
+            contentDescription = null,
+            tint = trailingColor,
+            modifier = Modifier.size(18.dp)
+        )
     }
 }
 
@@ -344,33 +368,33 @@ fun SettingsCard(
     onClick: () -> Unit
 ) {
     val titleColor = when {
-        danger && theme == AppTheme.DARK -> Color(0xFFF87171)
-        danger -> Color(0xFFDC2626)
+        danger && theme == AppTheme.DARK -> Color(0xFFFCA5A5)
+        danger && theme == AppTheme.LIGHT -> Color(0xFFB91C1C)
         theme == AppTheme.DARK -> Color.White
         else -> Color(0xFF111827)
     }
 
-    val subtitleColor = if (theme == AppTheme.DARK) Color(0xFF64748B) else Color(0xFF6B7280)
+    val descriptionColor = if (theme == AppTheme.DARK) Color(0xFF64748B) else Color(0xFF6B7280)
 
     val iconBg = when {
-        danger && theme == AppTheme.DARK -> Color(0xFFEF4444).copy(alpha = 0.10f)
-        danger -> Color(0xFFFEE2E2)
-        theme == AppTheme.DARK -> Color(0xFF7C3AED).copy(alpha = 0.10f)
-        else -> Color(0xFFEDE9FE)
+        danger && theme == AppTheme.DARK -> Color(0xFF7F1D1D).copy(alpha = 0.18f)
+        danger && theme == AppTheme.LIGHT -> Color(0xFFFEE2E2)
+        theme == AppTheme.DARK -> Color(0xFF1E293B).copy(alpha = 0.65f)
+        else -> Color(0xFFF3F4F6)
     }
 
     val iconTint = when {
-        danger && theme == AppTheme.DARK -> Color(0xFFF87171)
-        danger -> Color(0xFFDC2626)
-        theme == AppTheme.DARK -> Color(0xFFC4B5FD)
-        else -> Color(0xFF7C3AED)
+        danger && theme == AppTheme.DARK -> Color(0xFFFCA5A5)
+        danger && theme == AppTheme.LIGHT -> Color(0xFFDC2626)
+        theme == AppTheme.DARK -> Color(0xFFCBD5E1)
+        else -> Color(0xFF374151)
     }
 
-    val chevronTint = when {
-        danger && theme == AppTheme.DARK -> Color(0xFFB91C1C)
-        danger -> Color(0xFFF87171)
-        theme == AppTheme.DARK -> Color(0xFF475569)
-        else -> Color(0xFF9CA3AF)
+    val icon = when (iconType) {
+        "lock" -> Icons.Default.Lock
+        "info" -> Icons.Default.Info
+        "delete" -> Icons.Default.Delete
+        else -> Icons.Default.Info
     }
 
     Row(
@@ -390,18 +414,9 @@ fun SettingsCard(
                 .background(iconBg),
             contentAlignment = Alignment.Center
         ) {
-            val icon = when (iconType) {
-                "lock" -> Icons.Default.Lock
-                "shield" -> Icons.Default.Security
-                "palette" -> Icons.Default.Palette
-                "info" -> Icons.Default.Info
-                "delete" -> Icons.Default.Delete
-                else -> Icons.Default.Info
-            }
-
             Icon(
                 imageVector = icon,
-                contentDescription = label,
+                contentDescription = null,
                 tint = iconTint,
                 modifier = Modifier.size(20.dp)
             )
@@ -413,21 +428,21 @@ fun SettingsCard(
             Text(
                 text = label,
                 color = titleColor,
-                fontWeight = FontWeight.Medium
+                fontSize = 15.sp,
+                fontWeight = FontWeight.SemiBold
             )
             Text(
                 text = description,
-                color = subtitleColor,
-                fontSize = 12.sp,
-                modifier = Modifier.padding(top = 2.dp)
+                color = descriptionColor,
+                fontSize = 12.sp
             )
         }
 
         Icon(
             imageVector = Icons.Default.ChevronRight,
-            contentDescription = "Open",
-            tint = chevronTint,
-            modifier = Modifier.size(16.dp)
+            contentDescription = null,
+            tint = if (theme == AppTheme.DARK) Color(0xFF94A3B8) else Color(0xFF9CA3AF),
+            modifier = Modifier.size(18.dp)
         )
     }
 }

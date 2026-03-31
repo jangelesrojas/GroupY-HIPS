@@ -165,7 +165,7 @@ fun RealMain(
             subtitle = "Gallery · Confirm · Reveal · Done",
             steps = listOf("Select image", "Confirm", "Scan", "Done"),
             backgroundColor = Color(0xFF0A2A1E),
-            onCardClick = { onOpenExtract() }
+            onCardClick = { /* navigate to extract screen */ }
         )
     }
 }
