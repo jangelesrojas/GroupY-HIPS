@@ -33,7 +33,6 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun ExtractPage(
-    theme: AppTheme,
     selectedImageName: String? = null,
     onBack: () -> Unit = {},
     onSelectImageClick: () -> Unit = {},
@@ -41,26 +40,10 @@ fun ExtractPage(
 ) {
     val hasImage = selectedImageName != null
 
-    val backgroundColor = if (theme == AppTheme.DARK) Color(0xFF0D0D1A) else Color(0xFFF8FAFC)
-    val titleColor = if (theme == AppTheme.DARK) Color.White else Color(0xFF111827)
-    val subtitleColor = if (theme == AppTheme.DARK) Color(0xFF667799) else Color(0xFF6B7280)
-    val bodyColor = if (theme == AppTheme.DARK) Color(0xFFD7E3FF) else Color(0xFF374151)
-    val cardColor = if (theme == AppTheme.DARK) Color(0xFF030C22) else Color.White
-    val borderColor = if (theme == AppTheme.DARK) Color(0xFF3A537C) else Color(0xFFD1D5DB)
-    val stepLineColor = if (theme == AppTheme.DARK) Color(0xFF2A3B5C) else Color(0xFFD1D5DB)
-    val inactiveStepColor = if (theme == AppTheme.DARK) Color(0xFF6E7F9F) else Color(0xFF9CA3AF)
-    val iconBoxColor = if (theme == AppTheme.DARK) Color(0xFF0B2B2E) else Color(0xFFECFEFF)
-    val imageIconBoxColor = if (theme == AppTheme.DARK) Color(0xFF1F2D46) else Color(0xFFF3F4F6)
-    val helperTextColor = if (theme == AppTheme.DARK) Color(0xFF607299) else Color(0xFF6B7280)
-    val buttonColor = if (theme == AppTheme.DARK) Color(0xFF1A2942) else Color(0xFFE5E7EB)
-    val buttonContentColor = if (theme == AppTheme.DARK) Color(0xFF91A4CA) else Color(0xFF374151)
-    val buttonDisabledColor = if (theme == AppTheme.DARK) Color(0xFF1A2942) else Color(0xFFE5E7EB)
-    val buttonDisabledContentColor = if (theme == AppTheme.DARK) Color(0xFF62708C) else Color(0xFF9CA3AF)
-
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(backgroundColor)
+            .background(Color(0xFF0D0D1A))
             .padding(24.dp)
     ) {
 
@@ -74,24 +57,26 @@ fun ExtractPage(
             Icon(
                 imageVector = Icons.Default.ArrowBack,
                 contentDescription = "Back",
-                tint = titleColor,
+                tint = Color.White,
                 modifier = Modifier.size(20.dp)
             )
             Spacer(modifier = Modifier.width(6.dp))
-            Text("Back", color = titleColor, fontSize = 16.sp)
+            Text("Back", color = Color.White, fontSize = 16.sp)
         }
 
-        // Header section
+        // Begin HEADER section
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Icon box
             Box(
                 modifier = Modifier
                     .size(36.dp)
-                    .background(iconBoxColor, RoundedCornerShape(10.dp))
+                    .background(Color(0xFF0B2B2E), RoundedCornerShape(10.dp))
                     .border(1.dp, Color(0xFF00B8B8), RoundedCornerShape(10.dp)),
                 contentAlignment = Alignment.Center
             ) {
+                // Header icon
                 Icon(
                     imageVector = Icons.Filled.Visibility,
                     contentDescription = "Eye icon",
@@ -103,28 +88,32 @@ fun ExtractPage(
             Spacer(modifier = Modifier.width(12.dp))
 
             Column {
+                // Page title
                 Text(
                     text = "Extract Message",
-                    color = titleColor,
+                    color = Color.White,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
 
+                // Page subtitle
                 Text(
                     text = "Reveal a hidden message from an image",
-                    color = subtitleColor,
+                    color = Color(0xFF667799),
                     fontSize = 13.sp
                 )
             }
         }
+        // End of HEADER section
 
         Spacer(modifier = Modifier.height(28.dp))
 
-        // Step indicator section
+        // Begin STEP INDICATOR section
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Begin STEP 1
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -136,7 +125,7 @@ fun ExtractPage(
                 ) {
                     Text(
                         text = "1",
-                        color = titleColor,
+                        color = Color.White,
                         fontSize = 14.sp
                     )
                 }
@@ -145,30 +134,32 @@ fun ExtractPage(
 
                 Text(
                     text = "Image",
-                    color = titleColor,
+                    color = Color.White,
                     fontSize = 12.sp
                 )
             }
+            // End STEP 1
 
             Box(
                 modifier = Modifier
                     .weight(1f)
                     .height(1.dp)
-                    .background(stepLineColor)
+                    .background(Color(0xFF2A3B5C))
             )
 
+            // Begin STEP 2
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Box(
                     modifier = Modifier
                         .size(32.dp)
-                        .border(1.dp, stepLineColor, CircleShape),
+                        .border(1.dp, Color(0xFF2A3B5C), CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = "2",
-                        color = inactiveStepColor,
+                        color = Color(0xFF6E7F9F),
                         fontSize = 14.sp
                     )
                 }
@@ -177,30 +168,32 @@ fun ExtractPage(
 
                 Text(
                     text = "Confirm",
-                    color = inactiveStepColor,
+                    color = Color(0xFF6E7F9F),
                     fontSize = 12.sp
                 )
             }
+            // End STEP 2
 
             Box(
                 modifier = Modifier
                     .weight(1f)
                     .height(1.dp)
-                    .background(stepLineColor)
+                    .background(Color(0xFF2A3B5C))
             )
 
+            // Begin STEP 3
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Box(
                     modifier = Modifier
                         .size(32.dp)
-                        .border(1.dp, stepLineColor, CircleShape),
+                        .border(1.dp, Color(0xFF2A3B5C), CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = "3",
-                        color = inactiveStepColor,
+                        color = Color(0xFF6E7F9F),
                         fontSize = 14.sp
                     )
                 }
@@ -209,76 +202,84 @@ fun ExtractPage(
 
                 Text(
                     text = "Reveal",
-                    color = inactiveStepColor,
+                    color = Color(0xFF6E7F9F),
                     fontSize = 12.sp
                 )
             }
+            // End STEP 3
         }
+        // End of STEP INDICATOR section
 
         Spacer(modifier = Modifier.height(30.dp))
 
-        // Description section
+        // Begin DESCRIPTION section
         Text(
             text = "Select a PNG carrier image that was created by HIPS.",
-            color = bodyColor,
+            color = Color(0xFFD7E3FF),
             fontSize = 16.sp
         )
+        // End of DESCRIPTION section
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // Image select section
+        // Begin IMAGE SELECT section
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(220.dp)
                 .border(
                     width = 1.dp,
-                    color = borderColor,
+                    color = Color(0xFF3A537C),
                     shape = RoundedCornerShape(20.dp)
                 )
-                .background(cardColor, RoundedCornerShape(20.dp))
+                .background(Color(0xFF030C22), RoundedCornerShape(20.dp))
                 .clickable { onSelectImageClick() },
             contentAlignment = Alignment.Center
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // Image icon container
                 Box(
                     modifier = Modifier
                         .size(64.dp)
-                        .background(imageIconBoxColor, RoundedCornerShape(16.dp)),
+                        .background(Color(0xFF1F2D46), RoundedCornerShape(16.dp)),
                     contentAlignment = Alignment.Center
                 ) {
+                    // Image icon
                     Icon(
                         imageVector = Icons.Filled.PhotoLibrary,
                         contentDescription = "Image icon",
-                        tint = inactiveStepColor,
+                        tint = Color(0xFF6E7F9F),
                         modifier = Modifier.size(30.dp)
                     )
                 }
 
                 Spacer(modifier = Modifier.height(18.dp))
 
+                // Selected image text
                 Text(
                     text = if (selectedImageName == null) "Select Image" else selectedImageName,
-                    color = titleColor,
+                    color = Color.White,
                     fontSize = 22.sp,
                     fontWeight = FontWeight.SemiBold
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
 
+                // Helper text
                 Text(
                     text = if (selectedImageName == null) "Tap to open gallery" else "Tap to change image",
-                    color = helperTextColor,
+                    color = Color(0xFF607299),
                     fontSize = 15.sp
                 )
             }
         }
+        // End of IMAGE SELECT section
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // Continue button section
+        // Begin CONTINUE BUTTON section
         Button(
             onClick = onContinueClick,
             enabled = hasImage,
@@ -287,10 +288,10 @@ fun ExtractPage(
                 .height(56.dp),
             shape = RoundedCornerShape(18.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = buttonColor,
-                disabledContainerColor = buttonDisabledColor,
-                contentColor = buttonContentColor,
-                disabledContentColor = buttonDisabledContentColor
+                containerColor = Color(0xFF1A2942),
+                disabledContainerColor = Color(0xFF1A2942),
+                contentColor = Color(0xFF91A4CA),
+                disabledContentColor = Color(0xFF62708C)
             )
         ) {
             Text(
@@ -299,5 +300,6 @@ fun ExtractPage(
                 fontWeight = FontWeight.Medium
             )
         }
+        // End of CONTINUE BUTTON section
     }
 }

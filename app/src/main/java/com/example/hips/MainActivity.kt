@@ -1,13 +1,8 @@
 package com.example.hips
 
-import android.content.Context
-import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
-import androidx.activity.result.PickVisualMediaRequest
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -18,29 +13,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            val prefs = getSharedPreferences("hips_auth", Context.MODE_PRIVATE)
-
             var currentScreen by rememberSaveable { mutableStateOf("cover") }
             var appTheme by rememberSaveable { mutableStateOf(AppTheme.DARK) }
-            var capturedImageUri by rememberSaveable { mutableStateOf<String?>(null) }
-
-            val pickImageLauncher = rememberLauncherForActivityResult(
-                contract = ActivityResultContracts.PickVisualMedia()
-            ) { uri: Uri? ->
-                if (uri != null) {
-                    capturedImageUri = uri.toString()
-                }
-            }
-
-            fun resetAppSettings() {
-                prefs.edit()
-                    .putString("hips-auth-method", "pin")
-                    .putString("hips-pin", "1234")
-                    .putString("hips-pattern", "0,1,2,4,8")
-                    .apply()
-
-                appTheme = AppTheme.DARK
-            }
 
             when (currentScreen) {
                 "cover" -> {
@@ -51,20 +25,8 @@ class MainActivity : ComponentActivity() {
                     )
                 }
 
-                "cameraPermission" -> {
-                    CameraPermissionHandler(
-                        onPermissionGranted = {
-                            currentScreen = "camera"
-                        },
-                        onBack = {
-                            currentScreen = "embed"
-                        }
-                    )
-                }
-
                 "unlock" -> {
                     UnlockScreen(
-                        theme = appTheme,
                         onSuccess = {
                             currentScreen = "realMain"
                         },
@@ -76,7 +38,6 @@ class MainActivity : ComponentActivity() {
 
                 "realMain" -> {
                     RealMain(
-                        theme = appTheme,
                         onOpenSettings = {
                             currentScreen = "settings"
                         },
@@ -105,9 +66,6 @@ class MainActivity : ComponentActivity() {
                                 AppTheme.DARK
                             }
                         },
-                        onResetApp = {
-                            resetAppSettings()
-                        },
                         onChangePinGesture = {
                             currentScreen = "changePinGesture"
                         }
@@ -116,7 +74,6 @@ class MainActivity : ComponentActivity() {
 
                 "changePinGesture" -> {
                     ChangePinGestureScreen(
-                        theme = appTheme,
                         onBack = {
                             currentScreen = "settings"
                         }
@@ -125,52 +82,26 @@ class MainActivity : ComponentActivity() {
 
                 "embed" -> {
                     EmbedPage(
-                        theme = appTheme,
                         onBack = {
                             currentScreen = "realMain"
-                        },
-                        onTakePhotoClick = {
-                            currentScreen = "cameraPermission"
-                        },
-                        onPickFromGalleryClick = {
-                            pickImageLauncher.launch(
-                                PickVisualMediaRequest(
-                                    ActivityResultContracts.PickVisualMedia.ImageOnly
-                                )
-                            )
                         }
                     )
                 }
 
                 "extract" -> {
                     ExtractPage(
-                        theme = appTheme,
                         onBack = {
                             currentScreen = "realMain"
                         },
                         onSelectImageClick = {
-                            pickImageLauncher.launch(
-                                PickVisualMediaRequest(
-                                    ActivityResultContracts.PickVisualMedia.ImageOnly
-                                )
-                            )
+                            // TODO: open image picker here
                         },
                         onContinueClick = {
+                            // TODO: move to extract confirm/reveal step
                         }
                     )
                 }
 
-                "camera" -> {
-                    CameraScreen(
-                        onBack = {
-                            currentScreen = "embed"
-                        },
-                        onPhotoCaptured = { uri ->
-                            capturedImageUri = uri.toString()
-                            currentScreen = "embed"
-                        }
-                    )
-                }
             }
         }
     }
