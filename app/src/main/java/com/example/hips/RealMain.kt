@@ -138,9 +138,8 @@ fun RealMain(
         ) {
             Text(
                 text = "HIPS conceals secret messages inside ordinary image " +
-                        "files using ordinary image files using " +
-                        "Least Significant Bit steganography. The images " +
-                        "appear completely normal to any observer.",
+                        "files using advanced steganographic techniques. " +
+                        "The images appear completely normal to any observer.",
                 color = titleColor, fontSize = 13.sp
             )
         }

@@ -66,7 +66,7 @@ Java_com_example_hips_Steganography_encodeMessage(JNIEnv *env, jobject thiz, jin
         jint pixel = pixelData[i];
         if (i < totalBitsNeeded) {
             int bit = getBit(dataToHide, i);
-            // Clear the LSB and set it to the message bit
+            // Embed the message bit into the pixel
             pixel = (pixel & 0xFFFFFFFE) | bit;
         }
         resultData[i] = pixel;
