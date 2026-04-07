@@ -19,4 +19,19 @@ object Steganography {
      * @return The decoded secret message.
      */
     external fun decodeMessage(pixels: IntArray): String?
+
+    /**
+     * Encodes a message using DCT coefficients (pre-compression) via libjpeg-turbo.
+     * @param jpegBytes The original JPEG image bytes.
+     * @param message The secret message to encode.
+     * @return A new byte array containing the encoded JPEG image, or null if it fails.
+     */
+    external fun encodeMessageDCT(jpegBytes: ByteArray, message: String): ByteArray?
+
+    /**
+     * Decodes a message from DCT coefficients using libjpeg-turbo.
+     * @param jpegBytes The JPEG image bytes containing the encoded message.
+     * @return The decoded secret message.
+     */
+    external fun decodeMessageDCT(jpegBytes: ByteArray): String?
 }

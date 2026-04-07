@@ -117,3 +117,34 @@ Java_com_example_hips_Steganography_decodeMessage(JNIEnv *env, jobject thiz, jin
     std::string decodedStr(msgBytes.begin(), msgBytes.end());
     return env->NewStringUTF(decodedStr.c_str());
 }
+
+extern "C"
+JNIEXPORT jbyteArray JNICALL
+Java_com_example_hips_Steganography_encodeMessageDCT(JNIEnv *env, jobject thiz, jbyteArray jpeg_bytes, jstring message) {
+    // TODO: Implement DCT embedding using libjpeg-turbo.
+    // 1. Decompress JPEG headers and read DCT coefficients.
+    // 2. Convert message to binary format.
+    // 3. Implement pre-compression embedding logic (modify DCT coefficients).
+    // 4. Compress back to JPEG bytes.
+    
+    // For now, return the original bytes as a placeholder.
+    jsize len = env->GetArrayLength(jpeg_bytes);
+    jbyteArray result = env->NewByteArray(len);
+    jbyte *bytes = env->GetByteArrayElements(jpeg_bytes, nullptr);
+    env->SetByteArrayRegion(result, 0, len, bytes);
+    env->ReleaseByteArrayElements(jpeg_bytes, bytes, JNI_ABORT);
+    return result;
+}
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_com_example_hips_Steganography_decodeMessageDCT(JNIEnv *env, jobject thiz, jbyteArray jpeg_bytes) {
+    // TODO: Implement DCT extraction using libjpeg-turbo.
+    // 1. Decompress JPEG headers and read DCT coefficients.
+    // 2. Extract binary message from modified DCT coefficients.
+    // 3. Convert binary back to string.
+    
+    // For now, return a placeholder string.
+    std::string placeholder = "DCT extraction not yet implemented";
+    return env->NewStringUTF(placeholder.c_str());
+}
