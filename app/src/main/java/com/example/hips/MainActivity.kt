@@ -14,8 +14,34 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import java.io.File
-
+import android.content.ContentValues
+import android.os.Environment
+import android.provider.MediaStore
 class MainActivity : ComponentActivity() {
+
+    private fun saveJpegToGallery(context: Context, sourceFile: File): Uri? {
+        val values = ContentValues().apply {
+            put(MediaStore.Images.Media.DISPLAY_NAME, "hips_stego_${System.currentTimeMillis()}.jpg")
+            put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+            put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/HIPS")
+            put(MediaStore.Images.Media.IS_PENDING, 1)
+        }
+
+        val resolver = context.contentResolver
+        val uri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values) ?: return null
+
+        resolver.openOutputStream(uri)?.use { out ->
+            sourceFile.inputStream().use { input ->
+                input.copyTo(out)
+            }
+        } ?: return null
+
+        values.clear()
+        values.put(MediaStore.Images.Media.IS_PENDING, 0)
+        resolver.update(uri, values, null, null)
+
+        return uri
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,7 +61,8 @@ class MainActivity : ComponentActivity() {
                 contract = ActivityResultContracts.PickVisualMedia()
             ) { uri: Uri? ->
                 if (uri != null) {
-                    capturedImageUri = uri.toString()
+                    embedImageUri = uri.toString()
+                    embedStatus = null
                 }
             }
 
@@ -155,7 +182,6 @@ class MainActivity : ComponentActivity() {
                             )
                         },
                         onEmbedClick = click@{
-
                             val imageUriString = embedImageUri
                             if (imageUriString.isNullOrBlank()) {
                                 embedStatus = "Please select a JPEG image first."
@@ -198,10 +224,15 @@ class MainActivity : ComponentActivity() {
                                     message = embedMessage
                                 )
 
-                                embedStatus = if (success) {
-                                    "Message embedded successfully: ${outputFile.absolutePath}"
+                                if (success) {
+                                    val savedUri = saveJpegToGallery(context, outputFile)
+                                    embedStatus = if (savedUri != null) {
+                                        "Message embedded successfully and saved to gallery."
+                                    } else {
+                                        "Embedded, but failed to save to gallery."
+                                    }
                                 } else {
-                                    "Embedding failed. Try a larger JPEG or a shorter message."
+                                    embedStatus = "Embedding failed. Try a larger JPEG or a shorter message."
                                 }
 
                             } catch (e: Exception) {
@@ -247,4 +278,5 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
 }

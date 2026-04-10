@@ -11,10 +11,21 @@ extern "C" {
 #include <jpeglib.h>
 }
 
-static constexpr int BIT_REPETITION = 5; //can swap to 3 but for 100 chars 5 offers a lot more robustness
+// Repeats each payload bit 5 times to make the hidden message more robust
+// if a few coefficients get changed later. (can switch it to 3 for more bytes but 5
+// is more robust especially if we are limiting the message size)
+static constexpr int BIT_REPETITION = 5;
+
+// Header format:
+// 4 bytes = "HIPS"
+// 4 bytes = message length
 static constexpr int HEADER_BYTES = 8;
+
+// Project limit for hidden message size.
+// We are keeping this small on purpose for better reliability.
 static constexpr int MAX_MESSAGE_BYTES = 100;
 
+// Custom libjpeg error wrapper so we can safely jump out on read/write failures.
 struct JpegErrorManager {
     jpeg_error_mgr pub;
     jmp_buf setjmpBuffer;
@@ -28,17 +39,20 @@ METHODDEF(void) hipsErrorExit(j_common_ptr cinfo) {
 static std::vector<uint8_t> buildPayload(const std::string& message) {
     std::vector<uint8_t> payload;
 
+    // Magic bytes let us identify that this JPEG contains our format.
     payload.push_back('H');
     payload.push_back('I');
     payload.push_back('P');
     payload.push_back('S');
 
+    // Store message length in 4 bytes so extraction knows how much to read.
     uint32_t len = static_cast<uint32_t>(message.size());
     payload.push_back((len >> 24) & 0xFF);
     payload.push_back((len >> 16) & 0xFF);
     payload.push_back((len >> 8) & 0xFF);
     payload.push_back(len & 0xFF);
 
+    // After the header, append the actual message bytes.
     payload.insert(payload.end(), message.begin(), message.end());
     return payload;
 }
@@ -50,14 +64,18 @@ static inline int getPayloadBit(const std::vector<uint8_t>& payload, size_t bitI
 }
 
 static inline bool isUsableMediumCoeff(JCOEF coeff, int zigzagIndex) {
+    // Never touch the DC coefficient because that affects the block too much.
     if (zigzagIndex == 0) return false;
 
-    // Medium-frequency band
+    // Only use a middle-frequency range.
+    // Low frequencies are too visually important.
+    // Very high frequencies are less stable after compression.
     if (zigzagIndex < 10 || zigzagIndex > 40) return false;
 
     int mag = std::abs(static_cast<int>(coeff));
 
-    // Skip fragile tiny values and very large values
+    // Skip tiny values because they are easier to break.
+    // Skip very large values to avoid making obvious changes.
     if (mag < 2 || mag > 20) return false;
 
     return true;
@@ -69,6 +87,7 @@ static void forEachUsableCoeff(
         jvirt_barray_ptr* coefArrays,
         Func func
 ) {
+    // Walk through every JPEG component and every 8x8 DCT block.
     for (int comp = 0; comp < dinfo->num_components; ++comp) {
         jpeg_component_info* compInfo = &dinfo->comp_info[comp];
 
@@ -117,9 +136,10 @@ static int computeCapacityBytes(
 ) {
     size_t usableBits = countUsableCoefficients(dinfo, coefArrays);
 
-    // Each logical payload bit consumes BIT_REPETITION coefficients
+    // Because of repetition, one real payload bit uses multiple coefficients.
     size_t effectivePayloadBits = usableBits / BIT_REPETITION;
 
+    // Need enough room for at least the fixed header.
     if (effectivePayloadBits < HEADER_BYTES * 8) {
         return 0;
     }
@@ -127,7 +147,7 @@ static int computeCapacityBytes(
     int bytes = static_cast<int>(effectivePayloadBits / 8) - HEADER_BYTES;
     if (bytes < 0) bytes = 0;
 
-    // hard cap for this project
+    // Keep capacity within the project message limit.
     if (bytes > MAX_MESSAGE_BYTES) {
         bytes = MAX_MESSAGE_BYTES;
     }
@@ -140,11 +160,14 @@ static void writeBitToCoeff(JCOEF& coeff, int bit) {
     int sign = (value < 0) ? -1 : 1;
     int mag = std::abs(value);
 
+    // We encode the bit using the parity of the coefficient magnitude.
+    // Odd = 1, even = 0.
     if ((mag & 1) != bit) {
         if (bit == 1) {
             if ((mag % 2) == 0) mag += 1;
         } else {
             if ((mag % 2) == 1) {
+                // Avoid collapsing into unstable tiny values.
                 if (mag == 3) mag = 4;
                 else mag -= 1;
             }
@@ -170,6 +193,7 @@ static bool embedPayloadIntoCoefficients(
             return false;
         }
 
+        // Every real payload bit is written multiple times.
         size_t logicalBitIndex = embeddedBitIndex / BIT_REPETITION;
         int bit = getPayloadBit(payload, logicalBitIndex);
 
@@ -181,7 +205,8 @@ static bool embedPayloadIntoCoefficients(
     return embeddedBitIndex == totalEmbeddedBits;
 }
 
-// Ready for later extraction work
+// These helpers are for extraction later.
+// We are not using them yet in embed, but they match the rep-5 format.
 static inline int readBitFromCoeff(JCOEF coeff) {
     return std::abs(static_cast<int>(coeff)) & 1;
 }
@@ -238,8 +263,18 @@ static bool embedJpegInternal(
 
     jpeg_create_decompress(&dinfo);
     jpeg_stdio_src(&dinfo, inFile);
+
+    // Save APP markers and comment markers from the original JPEG.
+    // This helps preserve EXIF data like orientation, which fixes the
+    // rotated-image issue after embedding.
+    for (int marker = 0xE0; marker <= 0xEF; ++marker) {
+        jpeg_save_markers(&dinfo, marker, 0xFFFF);
+    }
+    jpeg_save_markers(&dinfo, JPEG_COM, 0xFFFF);
+
     jpeg_read_header(&dinfo, TRUE);
 
+    // Read the DCT coefficients directly instead of decoding to pixels.
     jvirt_barray_ptr* coefArrays = jpeg_read_coefficients(&dinfo);
 
     int capacityBytes = computeCapacityBytes(&dinfo, coefArrays);
@@ -264,8 +299,15 @@ static bool embedJpegInternal(
     jpeg_create_compress(&cinfo);
     jpeg_stdio_dest(&cinfo, outFile);
 
+    // Copy JPEG settings so the output stays compatible with the input structure.
     jpeg_copy_critical_parameters(&dinfo, &cinfo);
     jpeg_write_coefficients(&cinfo, coefArrays);
+
+    // Write the saved metadata markers back into the output JPEG.
+    // This preserves EXIF and other useful JPEG metadata.
+    for (jpeg_saved_marker_ptr marker = dinfo.marker_list; marker != nullptr; marker = marker->next) {
+        jpeg_write_marker(&cinfo, marker->marker, marker->data, marker->data_length);
+    }
 
     jpeg_finish_compress(&cinfo);
     jpeg_finish_decompress(&dinfo);
