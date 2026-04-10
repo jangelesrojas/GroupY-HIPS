@@ -15,32 +15,42 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 
 @Composable
 fun EmbedPage(
     theme: AppTheme,
+    selectedImageUri: Uri? = null,
+    message: String,
+    statusText: String? = null,
+    onMessageChange: (String) -> Unit,
     onBack: () -> Unit,
     onTakePhotoClick: () -> Unit,
-    onPickFromGalleryClick: () -> Unit
-
+    onPickFromGalleryClick: () -> Unit,
+    onEmbedClick: () -> Unit
 ) {
     val backgroundColor = if (theme == AppTheme.DARK) Color(0xFF0D0D1A) else Color(0xFFF8FAFC)
     val cardPrimary = if (theme == AppTheme.DARK) Color(0xFF1E0A4A) else Color(0xFFF3E8FF)
@@ -50,15 +60,16 @@ fun EmbedPage(
     val titleColor = if (theme == AppTheme.DARK) Color.White else Color(0xFF111827)
     val subtitleColor = if (theme == AppTheme.DARK) Color(0xFF888888) else Color(0xFF6B7280)
     val bodyColor = if (theme == AppTheme.DARK) Color(0xFFCCCCCC) else Color(0xFF4B5563)
+    val borderColor = if (theme == AppTheme.DARK) Color(0xFF2A2A40) else Color(0xFFE5E7EB)
     val accent = Color(0xFF7B4FE0)
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(backgroundColor)
+            .verticalScroll(rememberScrollState())
             .padding(start = 16.dp, end = 16.dp, bottom = 16.dp, top = 40.dp)
     ) {
-        // Back button
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
@@ -75,7 +86,6 @@ fun EmbedPage(
             Text("Back", color = titleColor, fontSize = 16.sp)
         }
 
-        // Title row
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(
                 modifier = Modifier
@@ -90,19 +100,26 @@ fun EmbedPage(
                     modifier = Modifier.size(24.dp)
                 )
             }
+
             Spacer(modifier = Modifier.width(12.dp))
+
             Column {
-                Text("Embed Message", color = titleColor, fontWeight = FontWeight.Bold, fontSize = 22.sp)
-                Text("Hide a secret in your image", color = subtitleColor, fontSize = 13.sp)
+                Text(
+                    text = "Embed Message",
+                    color = titleColor,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 22.sp
+                )
+                Text(
+                    text = "Hide a secret in your JPEG image",
+                    color = subtitleColor,
+                    fontSize = 13.sp
+                )
             }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // Description test below title
         Text(
             text = "Choose how to get your cover image. You can take a photo directly or pick one from your gallery.",
             color = bodyColor,
@@ -112,7 +129,6 @@ fun EmbedPage(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // Button for Take a Photo
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -131,35 +147,35 @@ fun EmbedPage(
                     imageVector = Icons.Default.CameraAlt,
                     contentDescription = null,
                     tint = accent,
-                    modifier = Modifier.size(28.dp)
+                    modifier = Modifier.size(24.dp)
                 )
             }
+
             Spacer(modifier = Modifier.width(14.dp))
+
             Column(modifier = Modifier.weight(1f)) {
-                Text("Take a Photo", color = titleColor, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 Text(
-                    "Use your camera to capture a new image",
+                    text = "Take a Photo",
+                    color = titleColor,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 16.sp
+                )
+                Text(
+                    text = "Capture a new JPEG image with the camera",
                     color = subtitleColor,
-                    fontSize = 13.sp,
-                    lineHeight = 18.sp
+                    fontSize = 13.sp
                 )
             }
-            Icon(
-                imageVector = Icons.Default.ChevronRight,
-                contentDescription = null,
-                tint = accent,
-                modifier = Modifier.size(20.dp)
-            )
         }
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Button for Choose from Gallery
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(cardSecondary, shape = RoundedCornerShape(12.dp))
-                .clickable { onPickFromGalleryClick()}
+                .border(1.dp, borderColor, RoundedCornerShape(12.dp))
+                .clickable { onPickFromGalleryClick() }
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -172,57 +188,186 @@ fun EmbedPage(
                 Icon(
                     imageVector = Icons.Default.PhotoLibrary,
                     contentDescription = null,
-                    tint = Color(0xFF888888),
-                    modifier = Modifier.size(28.dp)
+                    tint = titleColor,
+                    modifier = Modifier.size(24.dp)
                 )
             }
+
             Spacer(modifier = Modifier.width(14.dp))
+
             Column(modifier = Modifier.weight(1f)) {
-                Text("Choose from Gallery", color = titleColor, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 Text(
-                    "Select an existing image or JPEG",
+                    text = "Choose from Gallery",
+                    color = titleColor,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 16.sp
+                )
+                Text(
+                    text = "Select an existing JPEG image from your device",
                     color = subtitleColor,
                     fontSize = 13.sp
                 )
             }
-            Icon(
-                imageVector = Icons.Default.ChevronRight,
-                contentDescription = null,
-                tint = Color(0xFF888888),
-                modifier = Modifier.size(20.dp)
-            )
         }
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // Orange text box at bottom
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFF2A1A00), shape = RoundedCornerShape(8.dp))
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .background(cardSecondary, shape = RoundedCornerShape(12.dp))
+                .border(1.dp, borderColor, RoundedCornerShape(12.dp))
+                .padding(14.dp),
+            verticalAlignment = Alignment.Top
         ) {
-            Icon(
-                imageVector = Icons.Default.Warning,
-                contentDescription = null,
-                tint = Color(0xFFFFAA00),
-                modifier = Modifier.size(18.dp)
-            )
-            Spacer(modifier = Modifier.width(10.dp))
-            Text(
-                text = "Supports JPEG images only. The output image will also be a JPEG.",
-                color = Color(0xFFFFAA00),
-                fontSize = 13.sp,
-                lineHeight = 18.sp
-            )
-            @Composable
-            fun CameraCaptureScreen(
-                theme: AppTheme,
-                onBack: () -> Unit,
-                onPhotoCaptured: (Uri) -> Unit
-            ){
+            Box(
+                modifier = Modifier
+                    .size(28.dp)
+                    .background(Color(0x22F59E0B), shape = CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Warning,
+                    contentDescription = null,
+                    tint = Color(0xFFF59E0B),
+                    modifier = Modifier.size(18.dp)
+                )
+            }
 
+            Spacer(modifier = Modifier.width(10.dp))
+
+            Column {
+                Text(
+                    text = "JPEG output enabled",
+                    color = titleColor,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 14.sp
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "This flow is set up for JPEG carrier images and will save the embedded result as a JPEG.",
+                    color = bodyColor,
+                    fontSize = 13.sp,
+                    lineHeight = 18.sp
+                )
+            }
+        }
+
+        if (selectedImageUri != null) {
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text(
+                text = "Selected image",
+                color = titleColor,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 15.sp
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            AsyncImage(
+                model = selectedImageUri,
+                contentDescription = "Selected image",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(220.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(cardSecondary),
+                contentScale = ContentScale.Crop
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Button(
+                onClick = onPickFromGalleryClick,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Change Image")
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Text(
+                text = "Secret message",
+                color = titleColor,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 15.sp
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            OutlinedTextField(
+                value = message,
+                onValueChange = onMessageChange,
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Enter secret message") },
+                minLines = 4,
+                maxLines = 8
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = onEmbedClick,
+                modifier = Modifier.fillMaxWidth(),
+                enabled = message.isNotBlank()
+            ) {
+                Text("Embed into JPEG")
+            }
+
+            if (!statusText.isNullOrBlank()) {
+                Spacer(modifier = Modifier.height(14.dp))
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(cardSecondary, RoundedCornerShape(12.dp))
+                        .border(1.dp, borderColor, RoundedCornerShape(12.dp))
+                        .padding(14.dp)
+                ) {
+                    Text(
+                        text = statusText,
+                        color = bodyColor,
+                        fontSize = 13.sp,
+                        lineHeight = 18.sp
+                    )
+                }
+            }
+        } else {
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(cardSecondary, RoundedCornerShape(12.dp))
+                    .border(1.dp, borderColor, RoundedCornerShape(12.dp))
+                    .padding(18.dp)
+            ) {
+                Text(
+                    text = "No image selected yet. Pick a JPEG from the gallery or take a photo to continue.",
+                    color = bodyColor,
+                    fontSize = 13.sp,
+                    lineHeight = 18.sp
+                )
+            }
+
+            if (!statusText.isNullOrBlank()) {
+                Spacer(modifier = Modifier.height(14.dp))
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(cardSecondary, RoundedCornerShape(12.dp))
+                        .border(1.dp, borderColor, RoundedCornerShape(12.dp))
+                        .padding(14.dp)
+                ) {
+                    Text(
+                        text = statusText,
+                        color = bodyColor,
+                        fontSize = 13.sp,
+                        lineHeight = 18.sp
+                    )
+                }
             }
         }
     }

@@ -26,5 +26,6 @@ androidx-camera-lifecycle = { group = "androidx.camera", name = "camera-lifecycl
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
+androidKotlin = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 

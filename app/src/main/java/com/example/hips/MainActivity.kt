@@ -13,6 +13,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -23,6 +24,10 @@ class MainActivity : ComponentActivity() {
             var currentScreen by rememberSaveable { mutableStateOf("cover") }
             var appTheme by rememberSaveable { mutableStateOf(AppTheme.DARK) }
             var capturedImageUri by rememberSaveable { mutableStateOf<String?>(null) }
+
+            var embedImageUri by rememberSaveable { mutableStateOf<String?>(null) }
+            var embedMessage by rememberSaveable { mutableStateOf("") }
+            var embedStatus by rememberSaveable { mutableStateOf<String?>(null) }
 
             val pickImageLauncher = rememberLauncherForActivityResult(
                 contract = ActivityResultContracts.PickVisualMedia()
@@ -127,6 +132,13 @@ class MainActivity : ComponentActivity() {
                 "embed" -> {
                     EmbedPage(
                         theme = appTheme,
+                        selectedImageUri = embedImageUri?.let { Uri.parse(it) },
+                        message = embedMessage,
+                        statusText = embedStatus,
+                        onMessageChange = {
+                            embedMessage = it
+                            embedStatus = null
+                        },
                         onBack = {
                             currentScreen = "realMain"
                         },
@@ -139,6 +151,9 @@ class MainActivity : ComponentActivity() {
                                     ActivityResultContracts.PickVisualMedia.ImageOnly
                                 )
                             )
+                        },
+                        onEmbedClick = {
+                            embedStatus = "Embed logic not connected yet."
                         }
                     )
                 }
@@ -170,7 +185,8 @@ class MainActivity : ComponentActivity() {
                             currentScreen = "embed"
                         },
                         onPhotoCaptured = { uri ->
-                            capturedImageUri = uri.toString()
+                            embedImageUri = uri.toString()
+                            embedStatus = null
                             currentScreen = "embed"
                         }
                     )
