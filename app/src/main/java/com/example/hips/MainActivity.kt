@@ -12,15 +12,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-
+import androidx.compose.ui.platform.LocalContext
+import java.io.File
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
             val prefs = getSharedPreferences("hips_auth", Context.MODE_PRIVATE)
-
+            val context = LocalContext.current
             var currentScreen by rememberSaveable { mutableStateOf("cover") }
             var appTheme by rememberSaveable { mutableStateOf(AppTheme.DARK) }
             var capturedImageUri by rememberSaveable { mutableStateOf<String?>(null) }
@@ -152,8 +154,59 @@ class MainActivity : ComponentActivity() {
                                 )
                             )
                         },
-                        onEmbedClick = {
-                            embedStatus = "Embed logic not connected yet."
+                        onEmbedClick = click@{
+
+                            val imageUriString = embedImageUri
+                            if (imageUriString.isNullOrBlank()) {
+                                embedStatus = "Please select a JPEG image first."
+                                return@click
+                            }
+
+                            val messageBytes = Steganography.getUtf8Size(embedMessage)
+                            if (messageBytes > Steganography.MAX_MESSAGE_BYTES) {
+                                embedStatus = "Message is too large. Keep it at 100 bytes or less."
+                                return@click
+                            }
+
+                            try {
+                                val inputUri = Uri.parse(imageUriString)
+
+                                val inputStream = context.contentResolver.openInputStream(inputUri)
+                                if (inputStream == null) {
+                                    embedStatus = "Could not open selected image."
+                                    return@click
+                                }
+
+                                val inputFile = File(context.cacheDir, "embed_input.jpg")
+                                inputStream.use { input ->
+                                    inputFile.outputStream().use { output ->
+                                        input.copyTo(output)
+                                    }
+                                }
+
+                                val capacityBytes = Steganography.getEmbedCapacityBytes(inputFile.absolutePath)
+                                if (messageBytes > capacityBytes) {
+                                    embedStatus = "This JPEG is too small. Capacity: $capacityBytes bytes."
+                                    return@click
+                                }
+
+                                val outputFile = File(context.cacheDir, "stego_output.jpg")
+
+                                val success = Steganography.embedJpegMessage(
+                                    inputPath = inputFile.absolutePath,
+                                    outputPath = outputFile.absolutePath,
+                                    message = embedMessage
+                                )
+
+                                embedStatus = if (success) {
+                                    "Message embedded successfully: ${outputFile.absolutePath}"
+                                } else {
+                                    "Embedding failed. Try a larger JPEG or a shorter message."
+                                }
+
+                            } catch (e: Exception) {
+                                embedStatus = "Embedding failed: ${e.message}"
+                            }
                         }
                     )
                 }

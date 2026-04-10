@@ -296,21 +296,44 @@ fun EmbedPage(
 
             Spacer(modifier = Modifier.height(10.dp))
 
+            val messageBytes = message.toByteArray(Charsets.UTF_8).size
+            val overLimit = messageBytes > Steganography.MAX_MESSAGE_BYTES
+
             OutlinedTextField(
                 value = message,
-                onValueChange = onMessageChange,
+                onValueChange = { newValue ->
+                    val newBytes = newValue.toByteArray(Charsets.UTF_8).size
+                    if (newBytes <= Steganography.MAX_MESSAGE_BYTES) {
+                        onMessageChange(newValue)
+                    }
+                },
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text("Enter secret message") },
+                supportingText = {
+                    Text(
+                        text = "$messageBytes / ${Steganography.MAX_MESSAGE_BYTES} bytes"
+                    )
+                },
+                isError = overLimit,
                 minLines = 4,
                 maxLines = 8
             )
+
+            if (overLimit) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Message is too large. Keep it at 100 bytes or less.",
+                    color = Color(0xFFDC2626),
+                    fontSize = 12.sp
+                )
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
                 onClick = onEmbedClick,
                 modifier = Modifier.fillMaxWidth(),
-                enabled = message.isNotBlank()
+                enabled = message.isNotBlank() && !overLimit
             ) {
                 Text("Embed into JPEG")
             }
