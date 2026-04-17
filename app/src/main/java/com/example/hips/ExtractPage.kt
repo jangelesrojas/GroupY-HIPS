@@ -42,6 +42,8 @@ fun ExtractPage(
     theme: AppTheme,
     selectedImageName: String? = null,
     selectedImageUri: Uri? = null,
+    statusText: String? = null,
+    extractedMessage: String? = null,
     onBack: () -> Unit = {},
     onSelectImageClick: () -> Unit = {},
     onContinueClick: () -> Unit = {}
@@ -192,7 +194,7 @@ fun ExtractPage(
         Spacer(modifier = Modifier.height(30.dp))
 
         Text(
-            text = "Select a PNG carrier image that was created by HIPS.",
+            text = "Select a JPEG image that was created by HIPS.",
             color = bodyColor,
             fontSize = 16.sp
         )
@@ -341,10 +343,54 @@ fun ExtractPage(
             )
         ) {
             Text(
-                text = "Continue →",
+                text = "Extract Message",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Medium
             )
         }
+
+        if (!statusText.isNullOrBlank()) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(cardColor, RoundedCornerShape(16.dp))
+                    .border(1.dp, borderColor, RoundedCornerShape(16.dp))
+                    .padding(16.dp)
+            ) {
+                Text(
+                    text = statusText,
+                    color = bodyColor,
+                    fontSize = 14.sp
+                )
+            }
+        }
+
+        if (!extractedMessage.isNullOrBlank()) {
+            Spacer(modifier = Modifier.height(16.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(cardColor, RoundedCornerShape(16.dp))
+                    .border(1.dp, borderColor, RoundedCornerShape(16.dp))
+                    .padding(16.dp)
+            ) {
+                Column {
+                    Text(
+                        text = "Hidden message",
+                        color = titleColor,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = extractedMessage,
+                        color = bodyColor,
+                        fontSize = 14.sp
+                    )
+                }
+            }
+        }
+
     }
 }

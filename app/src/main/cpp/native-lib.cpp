@@ -351,6 +351,138 @@ static int getCapacityInternal(const char* inputPath) {
     return capacity;
 }
 
+static bool extractLogicalBits(
+        j_decompress_ptr dinfo,
+        jvirt_barray_ptr* coefArrays,
+        size_t logicalBitsNeeded,
+        std::vector<uint8_t>& outBytes
+) {
+    const size_t totalPhysicalBitsNeeded = logicalBitsNeeded * BIT_REPETITION;
+    std::vector<int> physicalBits;
+    physicalBits.reserve(totalPhysicalBitsNeeded);
+
+    forEachUsableCoeff(dinfo, coefArrays, [&](JCOEF& coeff) {
+        if (physicalBits.size() >= totalPhysicalBitsNeeded) {
+            return false;
+        }
+        physicalBits.push_back(readBitFromCoeff(coeff));
+        return true;
+    });
+
+    if (physicalBits.size() < totalPhysicalBitsNeeded) {
+        return false;
+    }
+
+    outBytes.assign((logicalBitsNeeded + 7) / 8, 0);
+
+    for (size_t logicalBitIndex = 0; logicalBitIndex < logicalBitsNeeded; ++logicalBitIndex) {
+        size_t base = logicalBitIndex * BIT_REPETITION;
+        int votedBit = majorityVote5(
+                physicalBits[base + 0],
+                physicalBits[base + 1],
+                physicalBits[base + 2],
+                physicalBits[base + 3],
+                physicalBits[base + 4]
+        );
+
+        size_t byteIndex = logicalBitIndex / 8;
+        int bitOffset = 7 - static_cast<int>(logicalBitIndex % 8);
+        outBytes[byteIndex] |= static_cast<uint8_t>(votedBit << bitOffset);
+    }
+
+    return true;
+}
+
+static std::string extractJpegInternal(const char* inputPath, bool& ok) {
+    ok = false;
+
+    FILE* inFile = std::fopen(inputPath, "rb");
+    if (!inFile) return "";
+
+    jpeg_decompress_struct dinfo{};
+    JpegErrorManager jerr{};
+    dinfo.err = jpeg_std_error(&jerr.pub);
+    jerr.pub.error_exit = hipsErrorExit;
+
+    if (setjmp(jerr.setjmpBuffer)) {
+        jpeg_destroy_decompress(&dinfo);
+        std::fclose(inFile);
+        return "";
+    }
+
+    jpeg_create_decompress(&dinfo);
+    jpeg_stdio_src(&dinfo, inFile);
+    jpeg_read_header(&dinfo, TRUE);
+    jvirt_barray_ptr* coefArrays = jpeg_read_coefficients(&dinfo);
+
+    // First extract the 8-byte header
+    std::vector<uint8_t> headerBytes;
+    if (!extractLogicalBits(&dinfo, coefArrays, HEADER_BYTES * 8, headerBytes)) {
+        jpeg_finish_decompress(&dinfo);
+        jpeg_destroy_decompress(&dinfo);
+        std::fclose(inFile);
+        return "";
+    }
+
+    if (headerBytes.size() < HEADER_BYTES) {
+        jpeg_finish_decompress(&dinfo);
+        jpeg_destroy_decompress(&dinfo);
+        std::fclose(inFile);
+        return "";
+    }
+
+    if (!(headerBytes[0] == 'H' &&
+          headerBytes[1] == 'I' &&
+          headerBytes[2] == 'P' &&
+          headerBytes[3] == 'S')) {
+        jpeg_finish_decompress(&dinfo);
+        jpeg_destroy_decompress(&dinfo);
+        std::fclose(inFile);
+        return "";
+    }
+
+    uint32_t msgLen =
+            (static_cast<uint32_t>(headerBytes[4]) << 24) |
+            (static_cast<uint32_t>(headerBytes[5]) << 16) |
+            (static_cast<uint32_t>(headerBytes[6]) << 8)  |
+            (static_cast<uint32_t>(headerBytes[7]));
+
+    if (msgLen > MAX_MESSAGE_BYTES) {
+        jpeg_finish_decompress(&dinfo);
+        jpeg_destroy_decompress(&dinfo);
+        std::fclose(inFile);
+        return "";
+    }
+
+    const size_t totalBytes = HEADER_BYTES + msgLen;
+    std::vector<uint8_t> payloadBytes;
+    if (!extractLogicalBits(&dinfo, coefArrays, totalBytes * 8, payloadBytes)) {
+        jpeg_finish_decompress(&dinfo);
+        jpeg_destroy_decompress(&dinfo);
+        std::fclose(inFile);
+        return "";
+    }
+
+    if (payloadBytes.size() < totalBytes) {
+        jpeg_finish_decompress(&dinfo);
+        jpeg_destroy_decompress(&dinfo);
+        std::fclose(inFile);
+        return "";
+    }
+
+    std::string message(
+            payloadBytes.begin() + HEADER_BYTES,
+            payloadBytes.begin() + HEADER_BYTES + msgLen
+    );
+
+    jpeg_finish_decompress(&dinfo);
+    jpeg_destroy_decompress(&dinfo);
+    std::fclose(inFile);
+
+    ok = true;
+    return message;
+}
+
 extern "C"
 JNIEXPORT jboolean JNICALL
 Java_com_example_hips_Steganography_embedJpegMessage(
@@ -388,4 +520,25 @@ Java_com_example_hips_Steganography_getEmbedCapacityBytes(
     int capacity = getCapacityInternal(inputPath);
     env->ReleaseStringUTFChars(inputPath_, inputPath);
     return capacity;
+}
+
+extern "C"
+JNIEXPORT jstring JNICALL
+Java_com_example_hips_Steganography_extractJpegMessage(
+        JNIEnv* env,
+        jobject /* thiz */,
+        jstring inputPath_
+) {
+    const char* inputPath = env->GetStringUTFChars(inputPath_, nullptr);
+
+    bool ok = false;
+    std::string message = extractJpegInternal(inputPath, ok);
+
+    env->ReleaseStringUTFChars(inputPath_, inputPath);
+
+    if (!ok) {
+        return nullptr;
+    }
+
+    return env->NewStringUTF(message.c_str());
 }

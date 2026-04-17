@@ -57,12 +57,26 @@ class MainActivity : ComponentActivity() {
             var embedMessage by rememberSaveable { mutableStateOf("") }
             var embedStatus by rememberSaveable { mutableStateOf<String?>(null) }
 
-            val pickImageLauncher = rememberLauncherForActivityResult(
+            var extractImageUri by rememberSaveable { mutableStateOf<String?>(null) }
+            var extractStatus by rememberSaveable { mutableStateOf<String?>(null) }
+            var extractedMessage by rememberSaveable { mutableStateOf<String?>(null) }
+
+            val pickEmbedImageLauncher = rememberLauncherForActivityResult(
                 contract = ActivityResultContracts.PickVisualMedia()
             ) { uri: Uri? ->
                 if (uri != null) {
                     embedImageUri = uri.toString()
                     embedStatus = null
+                }
+            }
+
+            val pickExtractImageLauncher = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.PickVisualMedia()
+            ) { uri: Uri? ->
+                if (uri != null) {
+                    extractImageUri = uri.toString()
+                    extractStatus = null
+                    extractedMessage = null
                 }
             }
 
@@ -175,7 +189,7 @@ class MainActivity : ComponentActivity() {
                             currentScreen = "cameraPermission"
                         },
                         onPickFromGalleryClick = {
-                            pickImageLauncher.launch(
+                            pickEmbedImageLauncher.launch(
                                 PickVisualMediaRequest(
                                     ActivityResultContracts.PickVisualMedia.ImageOnly
                                 )
@@ -245,20 +259,50 @@ class MainActivity : ComponentActivity() {
                 "extract" -> {
                     ExtractPage(
                         theme = appTheme,
-                        selectedImageUri = capturedImageUri?.let { Uri.parse(it) },
+                        selectedImageUri = extractImageUri?.let { Uri.parse(it) },
                         selectedImageName = "Selected image",
+                        statusText = extractStatus,
+                        extractedMessage = extractedMessage,
                         onBack = {
-                            capturedImageUri = null
+                            extractImageUri = null
+                            extractStatus = null
+                            extractedMessage = null
                             currentScreen = "realMain"
                         },
                         onSelectImageClick = {
-                            pickImageLauncher.launch(
-                                PickVisualMediaRequest(
-                                    ActivityResultContracts.PickVisualMedia.ImageOnly
-                                )
+                            pickExtractImageLauncher.launch(
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                             )
                         },
-                        onContinueClick = {
+                        onContinueClick = click@{
+                            val imageUriString = extractImageUri
+                            if (imageUriString.isNullOrBlank()) {
+                                extractStatus = "Please select a JPEG image first."
+                                extractedMessage = null
+                                return@click
+                            }
+
+                            try {
+                                val inputUri = Uri.parse(imageUriString)
+                                val inputFile = StegoFileHelper.copyUriToCacheJpeg(
+                                    context = context,
+                                    uri = inputUri,
+                                    fileName = "extract_input.jpg"
+                                )
+
+                                val result = Steganography.extractJpegMessage(inputFile.absolutePath)
+
+                                if (result != null) {
+                                    extractedMessage = result
+                                    extractStatus = "Message extracted successfully."
+                                } else {
+                                    extractedMessage = null
+                                    extractStatus = "No HIPS message was found in this JPEG."
+                                }
+                            } catch (e: Exception) {
+                                extractedMessage = null
+                                extractStatus = "Extraction failed: ${e.message}"
+                            }
                         }
                     )
                 }
