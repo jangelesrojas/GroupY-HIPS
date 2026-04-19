@@ -189,10 +189,10 @@ fun FeatureCard(
     backgroundColor: Color,
     onCardClick: () -> Unit = {}
 ) {
-    val titleColor = if (theme == AppTheme.DARK) Color.White else Color(0xFF111827)
-    val featureSubtitleColor = if (theme == AppTheme.DARK) Color(0xFFCBD5E1) else Color(0xFF6B7280)
-    val chipColor = if (theme == AppTheme.DARK) Color(0xFF2A2A3A) else Color(0xFFE5E7EB)
-    val chipTextColor = if (theme == AppTheme.DARK) Color(0xFFAAAAAA) else Color(0xFF4B5563)
+    val titleColor = Color.White
+    val featureSubtitleColor = Color(0xFFE5E7EB)
+    val chipColor = Color.White.copy(alpha = 0.12f)
+    val chipTextColor = Color.White.copy(alpha = 0.88f)
 
     Column(
         modifier = Modifier

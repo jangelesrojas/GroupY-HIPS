@@ -61,12 +61,28 @@ class MainActivity : ComponentActivity() {
             var extractStatus by rememberSaveable { mutableStateOf<String?>(null) }
             var extractedMessage by rememberSaveable { mutableStateOf<String?>(null) }
 
+            var embedSuccessDialog by rememberSaveable { mutableStateOf<String?>(null) }
+            var embedCapacityBytes by rememberSaveable { mutableStateOf<Int?>(null) }
+
             val pickEmbedImageLauncher = rememberLauncherForActivityResult(
                 contract = ActivityResultContracts.PickVisualMedia()
             ) { uri: Uri? ->
                 if (uri != null) {
                     embedImageUri = uri.toString()
                     embedStatus = null
+                    embedSuccessDialog = null
+
+                    try {
+                        val inputFile = StegoFileHelper.copyUriToCacheJpeg(
+                            context = context,
+                            uri = uri,
+                            fileName = "capacity_check.jpg"
+                        )
+                        embedCapacityBytes = Steganography.getEmbedCapacityBytes(inputFile.absolutePath)
+                    } catch (e: Exception) {
+                        embedCapacityBytes = null
+                        embedStatus = "Could not read JPEG capacity: ${e.message}"
+                    }
                 }
             }
 
@@ -178,21 +194,18 @@ class MainActivity : ComponentActivity() {
                         selectedImageUri = embedImageUri?.let { Uri.parse(it) },
                         message = embedMessage,
                         statusText = embedStatus,
+                        capacityBytes = embedCapacityBytes,
+                        successDialogMessage = embedSuccessDialog,
+                        onDismissSuccessDialog = { embedSuccessDialog = null },
                         onMessageChange = {
                             embedMessage = it
                             embedStatus = null
                         },
-                        onBack = {
-                            currentScreen = "realMain"
-                        },
-                        onTakePhotoClick = {
-                            currentScreen = "cameraPermission"
-                        },
+                        onBack = { currentScreen = "realMain" },
+                        onTakePhotoClick = { currentScreen = "cameraPermission" },
                         onPickFromGalleryClick = {
                             pickEmbedImageLauncher.launch(
-                                PickVisualMediaRequest(
-                                    ActivityResultContracts.PickVisualMedia.ImageOnly
-                                )
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                             )
                         },
                         onEmbedClick = click@{
@@ -203,32 +216,20 @@ class MainActivity : ComponentActivity() {
                             }
 
                             val messageBytes = Steganography.getUtf8Size(embedMessage)
-                            if (messageBytes > Steganography.MAX_MESSAGE_BYTES) {
-                                embedStatus = "Message is too large. Keep it at 100 bytes or less."
+                            val availableCapacity = embedCapacityBytes ?: 0
+
+                            if (messageBytes > availableCapacity) {
+                                embedStatus = "Message is too large for this JPEG. Capacity: $availableCapacity bytes."
                                 return@click
                             }
 
                             try {
                                 val inputUri = Uri.parse(imageUriString)
-
-                                val inputStream = context.contentResolver.openInputStream(inputUri)
-                                if (inputStream == null) {
-                                    embedStatus = "Could not open selected image."
-                                    return@click
-                                }
-
-                                val inputFile = File(context.cacheDir, "embed_input.jpg")
-                                inputStream.use { input ->
-                                    inputFile.outputStream().use { output ->
-                                        input.copyTo(output)
-                                    }
-                                }
-
-                                val capacityBytes = Steganography.getEmbedCapacityBytes(inputFile.absolutePath)
-                                if (messageBytes > capacityBytes) {
-                                    embedStatus = "This JPEG is too small. Capacity: $capacityBytes bytes."
-                                    return@click
-                                }
+                                val inputFile = StegoFileHelper.copyUriToCacheJpeg(
+                                    context = context,
+                                    uri = inputUri,
+                                    fileName = "embed_input.jpg"
+                                )
 
                                 val outputFile = File(context.cacheDir, "stego_output.jpg")
 
@@ -240,15 +241,15 @@ class MainActivity : ComponentActivity() {
 
                                 if (success) {
                                     val savedUri = saveJpegToGallery(context, outputFile)
-                                    embedStatus = if (savedUri != null) {
+                                    embedStatus = null
+                                    embedSuccessDialog = if (savedUri != null) {
                                         "Message embedded successfully and saved to gallery."
                                     } else {
-                                        "Embedded, but failed to save to gallery."
+                                        "Message embedded, but saving to gallery failed."
                                     }
                                 } else {
                                     embedStatus = "Embedding failed. Try a larger JPEG or a shorter message."
                                 }
-
                             } catch (e: Exception) {
                                 embedStatus = "Embedding failed: ${e.message}"
                             }
@@ -315,6 +316,19 @@ class MainActivity : ComponentActivity() {
                         onPhotoCaptured = { uri ->
                             embedImageUri = uri.toString()
                             embedStatus = null
+
+                            try {
+                                val inputFile = StegoFileHelper.copyUriToCacheJpeg(
+                                    context = context,
+                                    uri = uri,
+                                    fileName = "camera_capacity_check.jpg"
+                                )
+                                embedCapacityBytes = Steganography.getEmbedCapacityBytes(inputFile.absolutePath)
+                            } catch (e: Exception) {
+                                embedCapacityBytes = null
+                                embedStatus = "Could not read JPEG capacity: ${e.message}"
+                            }
+
                             currentScreen = "embed"
                         }
                     )

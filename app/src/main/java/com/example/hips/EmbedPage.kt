@@ -39,6 +39,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.delay
+
 
 @Composable
 fun EmbedPage(
@@ -46,6 +52,9 @@ fun EmbedPage(
     selectedImageUri: Uri? = null,
     message: String,
     statusText: String? = null,
+    capacityBytes: Int? = null,
+    successDialogMessage: String? = null,
+    onDismissSuccessDialog: () -> Unit = {},
     onMessageChange: (String) -> Unit,
     onBack: () -> Unit,
     onTakePhotoClick: () -> Unit,
@@ -62,6 +71,33 @@ fun EmbedPage(
     val bodyColor = if (theme == AppTheme.DARK) Color(0xFFCCCCCC) else Color(0xFF4B5563)
     val borderColor = if (theme == AppTheme.DARK) Color(0xFF2A2A40) else Color(0xFFE5E7EB)
     val accent = Color(0xFF7B4FE0)
+    val actualCapacity = capacityBytes ?: Steganography.MAX_MESSAGE_BYTES
+    val messageBytes = message.toByteArray(Charsets.UTF_8).size
+    val overLimit = messageBytes > actualCapacity
+
+    LaunchedEffect(successDialogMessage) {
+        if (!successDialogMessage.isNullOrBlank()) {
+            delay(1600)
+            onDismissSuccessDialog()
+        }
+    }
+
+    if (!successDialogMessage.isNullOrBlank()) {
+        AlertDialog(
+            onDismissRequest = onDismissSuccessDialog,
+            confirmButton = {
+                TextButton(onClick = onDismissSuccessDialog) {
+                    Text("OK")
+                }
+            },
+            title = {
+                Text("Embed complete")
+            },
+            text = {
+                Text(successDialogMessage)
+            }
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -302,38 +338,50 @@ fun EmbedPage(
             OutlinedTextField(
                 value = message,
                 onValueChange = { newValue ->
-                    val newBytes = newValue.toByteArray(Charsets.UTF_8).size
-                    if (newBytes <= Steganography.MAX_MESSAGE_BYTES) {
-                        onMessageChange(newValue)
-                    }
+                    onMessageChange(newValue)
                 },
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text("Enter secret message") },
                 supportingText = {
-                    Text(
-                        text = "$messageBytes / ${Steganography.MAX_MESSAGE_BYTES} bytes"
-                    )
+                    Text("$messageBytes / $actualCapacity bytes")
                 },
                 isError = overLimit,
                 minLines = 4,
-                maxLines = 8
+                maxLines = 8,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = titleColor,
+                    unfocusedTextColor = titleColor,
+                    cursorColor = accent,
+                    focusedBorderColor = accent,
+                    unfocusedBorderColor = borderColor,
+                    focusedLabelColor = accent,
+                    unfocusedLabelColor = subtitleColor,
+                    focusedSupportingTextColor = subtitleColor,
+                    unfocusedSupportingTextColor = subtitleColor
+                )
             )
 
             if (overLimit) {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Message is too large. Keep it at 100 bytes or less.",
+                    text = "Message is too large for this image. Keep it at $actualCapacity bytes or less.",
                     color = Color(0xFFDC2626),
                     fontSize = 12.sp
                 )
             }
+
+            ///Text(  /// debug checkpoint unable to embed due to capacity check failure
+                ///text = "Debug capacity: ${capacityBytes ?: -1}",
+                ///fontSize = 12.sp,
+                ///color = subtitleColor
+            ///)
 
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
                 onClick = onEmbedClick,
                 modifier = Modifier.fillMaxWidth(),
-                enabled = message.isNotBlank() && !overLimit
+                enabled = message.isNotBlank() && !overLimit && capacityBytes != null
             ) {
                 Text("Embed into JPEG")
             }
