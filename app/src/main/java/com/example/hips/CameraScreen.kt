@@ -32,6 +32,7 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.compose.ui.unit.dp
+import android.os.Environment
 
 @Composable
 fun CameraScreen(
@@ -120,10 +121,7 @@ fun CameraScreen(
                         put(MediaStore.MediaColumns.DISPLAY_NAME, name)
                         put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                            put(
-                                MediaStore.MediaColumns.RELATIVE_PATH,
-                                "Pictures/HIPS"
-                            )
+                            put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
                         }
                     }
 

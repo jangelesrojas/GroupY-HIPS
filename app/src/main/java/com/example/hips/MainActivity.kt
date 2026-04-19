@@ -17,13 +17,24 @@ import java.io.File
 import android.content.ContentValues
 import android.os.Environment
 import android.provider.MediaStore
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import androidx.compose.runtime.DisposableEffect
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 class MainActivity : ComponentActivity() {
+
+    private fun makePhoneStyleTimestamp(): String {
+        return SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+    }
 
     private fun saveJpegToGallery(context: Context, sourceFile: File): Uri? {
         val values = ContentValues().apply {
-            put(MediaStore.Images.Media.DISPLAY_NAME, "hips_stego_${System.currentTimeMillis()}.jpg")
+            put(MediaStore.Images.Media.DISPLAY_NAME, "${makePhoneStyleTimestamp()}.jpg")
             put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
-            put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/HIPS")
+            put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES)
             put(MediaStore.Images.Media.IS_PENDING, 1)
         }
 
@@ -43,12 +54,17 @@ class MainActivity : ComponentActivity() {
         return uri
     }
 
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
             val prefs = getSharedPreferences("hips_auth", Context.MODE_PRIVATE)
             val context = LocalContext.current
+
+            val lifecycleOwner = LocalLifecycleOwner.current
+
             var currentScreen by rememberSaveable { mutableStateOf("cover") }
             var appTheme by rememberSaveable { mutableStateOf(AppTheme.DARK) }
             var capturedImageUri by rememberSaveable { mutableStateOf<String?>(null) }
@@ -96,6 +112,25 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
+            fun clearEmbedState() {
+                capturedImageUri = null
+                embedImageUri = null
+                embedMessage = ""
+                embedStatus = null
+            }
+
+            fun clearExtractState() {
+                extractImageUri = null
+                extractStatus = null
+                extractedMessage = null
+            }
+
+            fun resetSecureSession() {
+                clearEmbedState()
+                clearExtractState()
+                currentScreen = "cover"
+            }
+
             fun resetAppSettings() {
                 prefs.edit()
                     .putString("hips-auth-method", "pin")
@@ -104,6 +139,22 @@ class MainActivity : ComponentActivity() {
                     .apply()
 
                 appTheme = AppTheme.DARK
+            }
+
+            DisposableEffect(lifecycleOwner) {
+                val observer = LifecycleEventObserver { _, event ->
+                    if (event == Lifecycle.Event.ON_STOP) {
+                        clearEmbedState()
+                        clearExtractState()
+                        currentScreen = "cover"
+                    }
+                }
+
+                lifecycleOwner.lifecycle.addObserver(observer)
+
+                onDispose {
+                    lifecycleOwner.lifecycle.removeObserver(observer)
+                }
             }
 
             when (currentScreen) {
@@ -152,7 +203,7 @@ class MainActivity : ComponentActivity() {
                             currentScreen = "extract"
                         },
                         onExit = {
-                            currentScreen = "cover"
+                            resetSecureSession()
                         }
                     )
                 }
@@ -201,7 +252,10 @@ class MainActivity : ComponentActivity() {
                             embedMessage = it
                             embedStatus = null
                         },
-                        onBack = { currentScreen = "realMain" },
+                        onBack = {
+                            clearEmbedState()
+                            currentScreen = "realMain"
+                        },
                         onTakePhotoClick = { currentScreen = "cameraPermission" },
                         onPickFromGalleryClick = {
                             pickEmbedImageLauncher.launch(
@@ -241,11 +295,12 @@ class MainActivity : ComponentActivity() {
 
                                 if (success) {
                                     val savedUri = saveJpegToGallery(context, outputFile)
-                                    embedStatus = null
-                                    embedSuccessDialog = if (savedUri != null) {
-                                        "Message embedded successfully and saved to gallery."
+
+                                    if (savedUri != null) {
+                                        clearEmbedState()
+                                        embedStatus = "Message embedded successfully and saved to gallery."
                                     } else {
-                                        "Message embedded, but saving to gallery failed."
+                                        embedStatus = "Embedded, but failed to save to gallery."
                                     }
                                 } else {
                                     embedStatus = "Embedding failed. Try a larger JPEG or a shorter message."
@@ -265,9 +320,7 @@ class MainActivity : ComponentActivity() {
                         statusText = extractStatus,
                         extractedMessage = extractedMessage,
                         onBack = {
-                            extractImageUri = null
-                            extractStatus = null
-                            extractedMessage = null
+                            clearExtractState()
                             currentScreen = "realMain"
                         },
                         onSelectImageClick = {
