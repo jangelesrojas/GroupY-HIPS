@@ -139,11 +139,11 @@ Future improvements could include:
 ## Credits
 
 Project developed by Group Y:
-Jose Angeles Rojas
-Shabeg Minhas
-Kane Philips
-Jonah Razoky
-Alexander Sekulski
+Jose Angeles Rojas,
+Shabeg Minhas,
+Kane Philips,
+Jonah Razoky,
+Alexander Sekulski,
 
 This project uses Android development tools and JPEG processing concepts, including:
 
