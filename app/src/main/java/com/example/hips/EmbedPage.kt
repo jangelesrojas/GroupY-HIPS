@@ -1,5 +1,8 @@
 package com.example.hips
 
+// This screen lets the user choose a JPEG, type a message, and start the embed process.
+
+
 import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -61,6 +64,7 @@ fun EmbedPage(
     onPickFromGalleryClick: () -> Unit,
     onEmbedClick: () -> Unit
 ) {
+    // Theme-aware colors used by the embed screen.
     val backgroundColor = if (theme == AppTheme.DARK) Color(0xFF0D0D1A) else Color(0xFFF8FAFC)
     val cardPrimary = if (theme == AppTheme.DARK) Color(0xFF1E0A4A) else Color(0xFFF3E8FF)
     val cardSecondary = if (theme == AppTheme.DARK) Color(0xFF13132A) else Color.White
@@ -71,11 +75,14 @@ fun EmbedPage(
     val bodyColor = if (theme == AppTheme.DARK) Color(0xFFCCCCCC) else Color(0xFF4B5563)
     val borderColor = if (theme == AppTheme.DARK) Color(0xFF2A2A40) else Color(0xFFE5E7EB)
     val accent = Color(0xFF7B4FE0)
+    // Capacity comes from the selected JPEG, with the app max as a fallback.
     val actualCapacity = capacityBytes ?: Steganography.MAX_MESSAGE_BYTES
     val messageBytes = message.toByteArray(Charsets.UTF_8).size
     val overLimit = messageBytes > actualCapacity
 
+    // Auto-dismisses the success dialog so the screen does not stay blocked.
     LaunchedEffect(successDialogMessage) {
+        // Shows a centered success dialog after the image is embedded and saved.
         if (!successDialogMessage.isNullOrBlank()) {
             delay(1600)
             onDismissSuccessDialog()
@@ -371,9 +378,9 @@ fun EmbedPage(
             }
 
             ///Text(  /// debug checkpoint unable to embed due to capacity check failure
-                ///text = "Debug capacity: ${capacityBytes ?: -1}",
-                ///fontSize = 12.sp,
-                ///color = subtitleColor
+            ///text = "Debug capacity: ${capacityBytes ?: -1}",
+            ///fontSize = 12.sp,
+            ///color = subtitleColor
             ///)
 
             Spacer(modifier = Modifier.height(16.dp))

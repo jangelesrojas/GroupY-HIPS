@@ -1,5 +1,9 @@
 package com.example.hips
 
+// This is the fake cover app shown before the hidden HIPS unlock flow.
+// The hidden tap sequence is what moves the user into the secure part of the app.
+
+
 import android.icu.text.SimpleDateFormat
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -61,6 +65,7 @@ private const val MINDFULNESS_IMAGE =
     "https://images.unsplash.com/photo-1758787412766-b63d89e31021?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwZWFjZWZ1bCUyMG1pbmRmdWxuZXNzJTIwbWVkaXRhdGlvbiUyMGdyZWVuJTIwcGxhbnRzfGVufDF8fHx8MTc3MTgxMjEzM3ww&ixlib=rb-4.1.0&q=80&w=1080"
 
 // This stores one journal card item for the cover screen.
+// Stores one fake journal entry for the cover app feed.
 data class JournalEntry(
     val id: Int,
     val date: String,
@@ -72,6 +77,7 @@ data class JournalEntry(
 )
 
 // This is sample content for the fake cover page.
+// Fake journal data used to make the cover app look normal.
 private val entries = listOf(
     JournalEntry(
         id = 1,
@@ -115,6 +121,7 @@ fun CoverAppScreen(
         SimpleDateFormat("EEEE d MMMM yyyy", Locale.UK).format(Date())
     }
 
+    // Tracks logo taps and unlocks the real app after the hidden tap sequence.
     fun handleLogoTap() {
         if (unlocked) return
 
@@ -132,6 +139,7 @@ fun CoverAppScreen(
         }
     }
 
+    // Briefly scales the logo after a tap so the user gets visual feedback.
     LaunchedEffect(tapFeedback) {
         if (tapFeedback) {
             delay(100)
@@ -139,6 +147,7 @@ fun CoverAppScreen(
         }
     }
 
+    // Moves to the unlock screen after the hidden tap condition is met.
     LaunchedEffect(unlocked) {
         if (unlocked) {
             delay(150)
@@ -473,8 +482,6 @@ private fun ReflectionCard(entry: JournalEntry) {
         }
     }
 }
-
-// --Jose
 
 
 

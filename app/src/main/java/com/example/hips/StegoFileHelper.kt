@@ -1,5 +1,8 @@
 package com.example.hips
 
+// This helper handles copying JPEGs, creating output files, saving to gallery, and preserving EXIF data.
+
+
 import android.content.ContentValues
 import android.content.Context
 import android.net.Uri
@@ -10,8 +13,10 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 
+// File helper object used by the embed and extract flows.
 object StegoFileHelper {
 
+    // Copies a selected image URI into app cache so native code can read it by file path.
     fun copyUriToCacheJpeg(context: Context, uri: Uri, fileName: String): File {
         val input = context.contentResolver.openInputStream(uri)
             ?: throw IOException("Could not open selected image")
@@ -27,10 +32,12 @@ object StegoFileHelper {
         return outFile
     }
 
+    // Creates a temporary output file in cache for the embedded JPEG.
     fun createOutputJpegFile(context: Context): File {
         return File(context.cacheDir, "hips_embed_${System.currentTimeMillis()}.jpg")
     }
 
+    // Saves a JPEG to the phone gallery using MediaStore.
     fun saveJpegToGallery(context: Context, sourceFile: File): Uri {
         val values = ContentValues().apply {
             put(MediaStore.MediaColumns.DISPLAY_NAME, "HIPS_${System.currentTimeMillis()}.jpg")
@@ -53,11 +60,13 @@ object StegoFileHelper {
         return uri
     }
 
+    // Attempts to copy important EXIF metadata so the output image keeps normal photo details.
     fun tryCopyExif(fromFile: File, toFile: File) {
         try {
             val src = ExifInterface(fromFile.absolutePath)
             val dst = ExifInterface(toFile.absolutePath)
 
+            // These metadata tags are worth preserving from the original image.
             val tags = listOf(
                 ExifInterface.TAG_MAKE,
                 ExifInterface.TAG_MODEL,

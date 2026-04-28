@@ -1,5 +1,8 @@
 package com.example.hips
 
+// This screen contains the user settings for theme, reset, authentication changes, and app info.
+
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -43,16 +46,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 
+// App theme options used by screens that support light and dark mode.
 enum class AppTheme {
     LIGHT, DARK
 }
 
+// Data model for one row in the settings page.
 data class SettingsItem(
     val label: String,
     val description: String,
     val danger: Boolean = false
 )
 
+// Groups settings rows into sections like Security, Appearance, and About.
 data class SettingsSection(
     val title: String,
     val items: List<SettingsItem>
@@ -64,8 +70,10 @@ fun SettingsPage(
     theme: AppTheme,
     onToggleTheme: () -> Unit,
     onResetApp: () -> Unit,
-    onChangePinGesture: () -> Unit
+    onChangePinGesture: () -> Unit,
+    onOpenAppInfo: () -> Unit
 ) {
+    // Controls the small reset confirmation popup.
     var showResetPopup by remember { mutableStateOf(false) }
 
     if (showResetPopup) {
@@ -75,6 +83,7 @@ fun SettingsPage(
         }
     }
 
+    // Settings list shown on the page.
     val settingsSections = listOf(
         SettingsSection(
             title = "Security",
@@ -97,6 +106,7 @@ fun SettingsPage(
         )
     )
 
+    // Theme-aware colors used by the settings screen.
     val backgroundColor = if (theme == AppTheme.DARK) Color(0xFF0A0A0F) else Color(0xFFF9FAFB)
     val headerBorderColor = if (theme == AppTheme.DARK) Color(0xFF1E293B).copy(alpha = 0.5f) else Color(0xFFE5E7EB)
     val titleColor = if (theme == AppTheme.DARK) Color.White else Color(0xFF111827)
@@ -215,7 +225,7 @@ fun SettingsPage(
                                             theme = theme,
                                             cardColor = cardColor,
                                             borderColor = normalBorderColor,
-                                            onClick = { }
+                                            onClick = onOpenAppInfo
                                         )
                                     }
 
@@ -446,3 +456,4 @@ fun SettingsCard(
         )
     }
 }
+

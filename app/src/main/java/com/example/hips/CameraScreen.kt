@@ -1,5 +1,8 @@
 package com.example.hips
 
+// This file shows the live camera preview and saves a captured JPEG to the gallery.
+
+
 import android.content.ContentValues
 import android.net.Uri
 import android.os.Build
@@ -39,13 +42,16 @@ fun CameraScreen(
     onBack: () -> Unit,
     onPhotoCaptured: (Uri) -> Unit
 ) {
+    // Context and lifecycle owner let CameraX attach safely to this Compose screen.
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val previewView = remember { PreviewView(context) }
 
+    // Stores the CameraX image capture use case after the camera is started.
     var imageCapture by remember { mutableStateOf<ImageCapture?>(null) }
     var cameraError by remember { mutableStateOf<String?>(null) }
 
+    // Starts the camera when the screen appears and releases it when the screen closes.
     DisposableEffect(Unit) {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
         val executor = ContextCompat.getMainExecutor(context)
@@ -54,10 +60,12 @@ fun CameraScreen(
             try {
                 val cameraProvider = cameraProviderFuture.get()
 
+                // Preview connects the live camera feed to the PreviewView.
                 val preview = Preview.Builder().build().also {
                     it.setSurfaceProvider(previewView.surfaceProvider)
                 }
 
+                // Capture is used when the user presses the button to take a photo.
                 val capture = ImageCapture.Builder().build()
                 imageCapture = capture
 
@@ -86,6 +94,7 @@ fun CameraScreen(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
+        // CameraX PreviewView is a normal Android view, so AndroidView is used inside Compose.
         AndroidView(
             factory = { previewView },
             modifier = Modifier.fillMaxSize()
@@ -115,6 +124,7 @@ fun CameraScreen(
 
             Button(
                 onClick = {
+                    // File name for the captured JPEG saved through MediaStore.
                     val name = "HIPS_${System.currentTimeMillis()}.jpg"
 
                     val contentValues = ContentValues().apply {
@@ -133,6 +143,7 @@ fun CameraScreen(
                         )
                         .build()
 
+                    // Saves the photo and calls onPhotoCaptured if the capture succeeds.
                     imageCapture?.takePicture(
                         outputOptions,
                         ContextCompat.getMainExecutor(context),

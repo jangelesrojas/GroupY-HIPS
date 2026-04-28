@@ -1,5 +1,8 @@
 package com.example.hips
 
+// This screen lets the user pick a JPEG and try to extract a hidden HIPS message.
+
+
 import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -48,8 +51,10 @@ fun ExtractPage(
     onSelectImageClick: () -> Unit = {},
     onContinueClick: () -> Unit = {}
 ) {
+    // Tracks whether an image has been selected yet.
     val hasImage = selectedImageUri != null
 
+    // Theme-aware colors used throughout the extract screen.
     val previewOverlayColor = if (theme == AppTheme.DARK) Color(0xCC030C22) else Color(0xCCFFFFFF)
     val changeButtonColor = if (theme == AppTheme.DARK) Color(0xFF13233A) else Color(0xFFF3F4F6)
     val backgroundColor = if (theme == AppTheme.DARK) Color(0xFF0D0D1A) else Color(0xFFF8FAFC)

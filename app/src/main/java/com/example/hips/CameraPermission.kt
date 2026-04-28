@@ -1,5 +1,8 @@
 package com.example.hips
 
+// This file handles asking the user for camera permission before opening the camera screen.
+
+
 import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -29,9 +32,11 @@ fun CameraPermissionHandler(
     onPermissionGranted: () -> Unit,
     onBack: () -> Unit = {}
 ) {
+    // Context is needed to check Android permission state.
     val context = LocalContext.current
     var permissionDenied by remember { mutableStateOf(false) }
 
+    // Launcher opens the Android camera permission prompt.
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted ->
@@ -42,6 +47,7 @@ fun CameraPermissionHandler(
         }
     }
 
+    // Runs once when this screen opens to start the permission check.
     LaunchedEffect(Unit) {
         val alreadyGranted = ContextCompat.checkSelfPermission(
             context,
@@ -55,6 +61,7 @@ fun CameraPermissionHandler(
         }
     }
 
+    // If permission is denied, show retry and back options instead of opening the camera.
     if (permissionDenied) {
         Column(
             modifier = Modifier

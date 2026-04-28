@@ -1,5 +1,8 @@
 package com.example.hips
 
+// This screen lets the user change the unlock method from PIN to pattern, or update the saved value.
+
+
 import android.content.Context
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -58,23 +61,28 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.sqrt
 
+// SharedPreferences keys and default values used for local unlock settings.
 private const val PREFS_NAME = "hips_auth"
 private const val DEFAULT_PIN = "1234"
 private const val DEFAULT_PATTERN = "0,1,2,4,8"
+// Auth method options supported by the change screen.
 private enum class AuthMethodType {
     PIN, PATTERN
 }
 
+// The screen moves through these steps while changing the PIN or pattern.
 private enum class Step {
     CHOOSE_METHOD, VERIFY_CURRENT, ENTER_NEW, CONFIRM_NEW, SUCCESS
 }
 
+// Stores one pattern dot location on the 3x3 grid.
 private data class DotPoint(
     val id: Int,
     val x: Float,
     val y: Float
 )
 
+// Groups the saved authentication method, PIN, and pattern together.
 private data class AuthData(
     val method: AuthMethodType,
     val pin: String,
@@ -109,6 +117,7 @@ fun ChangePinGestureScreen(
     val pattern = remember { mutableStateListOf<Int>() }
     var isDrawing by remember { mutableStateOf(false) }
 
+    // Creates the 3x3 pattern dots used by the gesture lock UI.
     val dots = remember {
         val size = 3
         val spacing = 80f
@@ -123,6 +132,7 @@ fun ChangePinGestureScreen(
     }
 
     // I read the current auth data from shared preferences here.
+    // Reads the currently saved PIN, pattern, and auth method from SharedPreferences.
     fun getCurrentAuth(): AuthData {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
@@ -137,6 +147,7 @@ fun ChangePinGestureScreen(
         )
     }
 
+    // Saves a new PIN and marks PIN as the active unlock method.
     fun savePin(pin: String) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         prefs.edit()
@@ -145,6 +156,7 @@ fun ChangePinGestureScreen(
             .apply()
     }
 
+    // Saves a new pattern and marks pattern as the active unlock method.
     fun savePattern(patternValue: String) {
         val prefs = context.getSharedPreferences("hips_auth", Context.MODE_PRIVATE)
         prefs.edit()
@@ -153,10 +165,12 @@ fun ChangePinGestureScreen(
             .apply()
     }
 
+    // Clears the pattern currently drawn on the screen.
     fun clearPattern() {
         pattern.clear()
     }
 
+    // Starts the change flow after the user chooses PIN or pattern.
     fun handleMethodSelect(selectedMethod: AuthMethodType) {
         val auth = getCurrentAuth()
         targetMethod = selectedMethod
@@ -227,6 +241,7 @@ fun ChangePinGestureScreen(
         }
     }
 
+    // Handles backspace input while typing a PIN.
     fun handlePinDelete() {
         when (step) {
             Step.VERIFY_CURRENT -> currentValue = currentValue.dropLast(1)
@@ -236,6 +251,7 @@ fun ChangePinGestureScreen(
         }
     }
 
+    // Validates the drawn pattern after the user lifts their finger.
     fun handlePatternEnd() {
         isDrawing = false
 

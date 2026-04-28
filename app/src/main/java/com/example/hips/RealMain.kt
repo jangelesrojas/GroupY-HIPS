@@ -1,5 +1,9 @@
 package com.example.hips
 
+// This is the main menu after the user unlocks the app.
+// It routes the user to embed, extract, settings, or exit.
+
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -48,6 +52,7 @@ fun RealMain(
     onOpenExtract: () -> Unit,
     onExit: () -> Unit
 ) {
+    // Theme-aware colors for the main menu.
     val backgroundColor = if (theme == AppTheme.DARK) Color(0xFF0D0D1A) else Color(0xFFF8FAFC)
     val surfaceColor = if (theme == AppTheme.DARK) Color(0xFF13132A) else Color.White
     val titleColor = if (theme == AppTheme.DARK) Color.White else Color(0xFF111827)
@@ -138,9 +143,9 @@ fun RealMain(
         ) {
             Text(
                 text = "HIPS conceals secret messages inside ordinary image " +
-                        "files using ordinary image files using " +
-                        "Least Significant Bit steganography. The images " +
-                        "appear completely normal to any observer.",
+                        "files using ordinary image files. " +
+                        "Please check the: App Info Page in the settings tab" +
+                        ", for best practice image sending with HIPS",
                 color = titleColor, fontSize = 13.sp
             )
         }

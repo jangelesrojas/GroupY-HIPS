@@ -1,5 +1,8 @@
 package com.example.hips
 
+// This screen checks the saved PIN or pattern before allowing access to the real app.
+
+
 import android.content.Context
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
@@ -81,10 +84,12 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
+// SharedPreferences keys and default unlock values.
 private const val PREFS_NAME = "hips_auth"
 private const val DEFAULT_PIN = "1234"
 private const val DEFAULT_PATTERN = "0,1,2,4,8"
 
+// Unlock methods supported by this screen.
 enum class AuthMethod {
     PIN, PATTERN
 }
@@ -95,6 +100,7 @@ fun UnlockScreen(
     onSuccess: () -> Unit,
     onBack: () -> Unit
 ) {
+    // Theme-aware colors for the unlock screen.
     val backgroundColor = if (theme == AppTheme.DARK) Color(0xFF0D0D1A) else Color(0xFFF8FAFC)
     val cardPrimary = if (theme == AppTheme.DARK) Color(0xFF1E0A4A) else Color(0xFFF3E8FF)
     val cardSecondary = if (theme == AppTheme.DARK) Color(0xFF13132A) else Color.White
@@ -105,6 +111,7 @@ fun UnlockScreen(
     val bodyColor = if (theme == AppTheme.DARK) Color(0xFFCCCCCC) else Color(0xFF4B5563)
     val accent = Color(0xFF7B4FE0)
 
+    // SharedPreferences is used to read the saved unlock method and value.
     val context = LocalContext.current
     val prefs = remember {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -118,16 +125,20 @@ fun UnlockScreen(
     var locked by rememberSaveable { mutableStateOf(false) }
     var lockCountdown by rememberSaveable { mutableIntStateOf(0) }
 
+    // Stores the pattern dots selected during the current draw attempt.
     val pattern = remember { mutableStateListOf<Int>() }
     var isDrawing by remember { mutableStateOf(false) }
 
+    // Used to shake the unlock card after incorrect attempts.
     val shakeOffset = remember { Animatable(0f) }
 
+    // Reads the saved unlock method when this screen first opens.
     LaunchedEffect(Unit) {
         val savedMethod = prefs.getString("hips-auth-method", "pin") ?: "pin"
         authMethod = if (savedMethod == "pattern") AuthMethod.PATTERN else AuthMethod.PIN
     }
 
+    // Counts down the temporary lockout after too many failed attempts.
     LaunchedEffect(locked, lockCountdown) {
         if (locked && lockCountdown > 0) {
             delay(1000)
@@ -139,6 +150,7 @@ fun UnlockScreen(
         }
     }
 
+    // Small shake animation for failed unlock attempts.
     suspend fun triggerShake() {
         val sequence = listOf(-18f, 18f, -14f, 14f, -8f, 8f, 0f)
         sequence.forEach {
@@ -146,11 +158,13 @@ fun UnlockScreen(
         }
     }
 
+    // Clears the current pattern attempt.
     fun resetPattern() {
         pattern.clear()
         isDrawing = false
     }
 
+    // Handles wrong PIN or pattern attempts and starts lockout if needed.
     fun handleFailedAttempt(label: String) {
         attempts += 1
         pin = ""
@@ -171,6 +185,7 @@ fun UnlockScreen(
         }
     }
 
+    // Handles number button input for PIN mode.
     fun handleDigit(digit: String) {
         if (locked || pin.length >= 4) return
 
@@ -188,12 +203,14 @@ fun UnlockScreen(
         }
     }
 
+    // Handles backspace for PIN mode.
     fun handleDelete() {
         if (locked) return
         pin = pin.dropLast(1)
         errorMsg = ""
     }
 
+    // Checks the drawn pattern against the saved pattern.
     fun handlePatternFinish() {
         isDrawing = false
 
@@ -606,6 +623,7 @@ private fun PatternCanvas(
     }
 }
 
+// Finds which pattern dot the user is touching, if any.
 private fun findHitDot(point: Offset, dots: List<Offset>): Int? {
     dots.forEachIndexed { index, dot ->
         val dx = point.x - dot.x
